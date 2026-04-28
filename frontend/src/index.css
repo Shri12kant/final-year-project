@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+/* Light theme variables */
+:root {
+  --surface: #ffffff;
+  --surface-solid: #f8fafc;
+  --border: #e5e7eb;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+}
+
+/* Dark theme variables */
+[data-theme="dark"] {
+  --surface: #0f172a;
+  --surface-solid: #1e293b;
+  --border: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+}
+
+/* Smooth theme transition */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Dark mode specific styles */
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* Light mode specific styles */
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+/* Brand palette (not pure black/white) */
+:root {
+  --bg: #fff7ed; /* warm sand */
+  --surface: rgba(255, 255, 255, 0.7);
+  --surface-solid: #fffaf2;
+  --text: #1f2937;
+  --muted: #475569;
+  --border: rgba(15, 23, 42, 0.12);
+  --ring: rgba(79, 70, 229, 0.35);
+  --accent: #4f46e5; /* indigo */
+  --accent-2: #14b8a6; /* teal */
+  --text-muted: var(--muted);
+  --surface-muted: rgba(15, 23, 42, 0.06);
+  --border-strong: rgba(148, 163, 184, 0.28);
+}
+
+html.dark {
+  --bg: #0b1220; /* deep navy */
+  --surface: rgba(17, 24, 39, 0.6);
+  --surface-solid: #0f172a;
+  --text: #e5e7eb;
+  --muted: #a1a1aa;
+  --border: rgba(148, 163, 184, 0.18);
+  --ring: rgba(129, 140, 248, 0.35);
+  --accent: #818cf8; /* indigo 400 */
+  --accent-2: #2dd4bf; /* teal 400 */
+  --text-muted: var(--muted);
+  --surface-muted: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(148, 163, 184, 0.28);
+}
+
+body {
+  background: radial-gradient(
+      1200px 800px at 10% 0%,
+      color-mix(in srgb, var(--accent) 18%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 600px at 90% 10%,
+      color-mix(in srgb, var(--accent-2) 14%, transparent),
+      transparent 62%
+    ),
+    var(--bg);
+  color: var(--text);
+}
+
+* {
+  outline-color: var(--ring);
+}
