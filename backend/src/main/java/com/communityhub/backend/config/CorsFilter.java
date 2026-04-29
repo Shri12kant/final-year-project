@@ -9,12 +9,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 @Component
 @Order(1)
 public class CorsFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(CorsFilter.class);
+
+    private static final List<String> ALLOWED_ORIGINS = Arrays.asList(
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "https://final-year-project-phi-ten.vercel.app",
+        "https://final-year-project-ijhsttq54.vercel.app"
+    );
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -28,23 +37,22 @@ public class CorsFilter implements Filter {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         HttpServletRequest httpRequest = (HttpServletRequest) request;
 
-        // Get the origin of the request
         String origin = httpRequest.getHeader("Origin");
         String method = httpRequest.getMethod();
         String uri = httpRequest.getRequestURI();
         
         logger.info("CORS Filter - Method: {}, URI: {}, Origin: {}", method, uri, origin);
         
-        // Set CORS headers for all requests
-        httpResponse.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
-        httpResponse.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        httpResponse.setHeader("Access-Control-Allow-Headers", "*");
-        httpResponse.setHeader("Access-Control-Allow-Credentials", "true");
-        httpResponse.setHeader("Access-Control-Max-Age", "3600");
+        if (origin != null && ALLOWED_ORIGINS.contains(origin)) {
+            httpResponse.setHeader("Access-Control-Allow-Origin", origin);
+            httpResponse.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+            httpResponse.setHeader("Access-Control-Allow-Headers", "*");
+            httpResponse.setHeader("Access-Control-Allow-Credentials", "true");
+            httpResponse.setHeader("Access-Control-Max-Age", "3600");
+        }
         
         logger.info("CORS Filter - Headers set for origin: {}", origin);
         
-        // Handle preflight requests
         if ("OPTIONS".equalsIgnoreCase(method)) {
             logger.info("CORS Filter - Handling OPTIONS preflight request");
             httpResponse.setStatus(HttpServletResponse.SC_OK);
@@ -56,6 +64,5 @@ public class CorsFilter implements Filter {
 
     @Override
     public void destroy() {
-        // Cleanup if needed
     }
 }
