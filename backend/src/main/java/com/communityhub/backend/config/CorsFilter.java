@@ -42,13 +42,17 @@ public class CorsFilter implements Filter {
         String uri = httpRequest.getRequestURI();
         
         logger.info("CORS Filter - Method: {}, URI: {}, Origin: {}", method, uri, origin);
+        logger.info("CORS Filter - ALLOWED_ORIGINS: {}", ALLOWED_ORIGINS);
         
         if (origin != null && ALLOWED_ORIGINS.contains(origin)) {
+            logger.info("CORS Filter - Origin {} is ALLOWED", origin);
             httpResponse.setHeader("Access-Control-Allow-Origin", origin);
             httpResponse.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
             httpResponse.setHeader("Access-Control-Allow-Headers", "*");
             httpResponse.setHeader("Access-Control-Allow-Credentials", "true");
             httpResponse.setHeader("Access-Control-Max-Age", "3600");
+        } else if (origin != null) {
+            logger.warn("CORS Filter - Origin {} is NOT ALLOWED", origin);
         }
         
         logger.info("CORS Filter - Headers set for origin: {}", origin);
