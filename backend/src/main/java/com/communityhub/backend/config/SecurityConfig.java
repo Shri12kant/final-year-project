@@ -1,7 +1,6 @@
 package com.communityhub.backend.config;
 
 import com.communityhub.backend.security.JwtAuthenticationFilter;
-import com.communityhub.backend.config.CorsFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,7 +44,6 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/uploads/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

@@ -16,6 +16,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EmailVerification {
+    
+    public static class Builder {
+        // Builder pattern for EmailVerification
+    }
+}
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
