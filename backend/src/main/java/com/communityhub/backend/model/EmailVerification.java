@@ -11,26 +11,31 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "email_verifications")
-public record EmailVerification(
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class EmailVerification {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id,
+    private Long id;
     
     @Column(nullable = false, unique = true)
-    String email,
+    private String email;
     
     @Column(nullable = false, unique = true)
-    String token,
+    private String token;
     
     @Column(nullable = false)
-    LocalDateTime expiresAt,
+    private LocalDateTime expiresAt;
     
     @Column(nullable = false)
-    boolean verified,
+    private boolean verified;
     
     @CreationTimestamp
-    LocalDateTime createdAt
-) {
+    private LocalDateTime createdAt;
+    
     public boolean isExpired() {
         return LocalDateTime.now().isAfter(expiresAt);
     }
