@@ -158,10 +158,15 @@ public class UserController {
         User user = userOpt.get();
         System.out.println("DEBUG: User found, deleting account: " + user.getUsername());
         
-        // Delete user from database (cascade delete will handle related data)
-        userRepository.delete(user);
-        System.out.println("DEBUG: User deleted from database");
-        
-        return ResponseEntity.ok(Map.of("message", "Account deleted successfully"));
+        try {
+            // Delete user from database (cascade delete will handle related data)
+            userRepository.delete(user);
+            System.out.println("DEBUG: User deleted from database");
+            
+            return ResponseEntity.ok(Map.of("message", "Account deleted successfully"));
+        } catch (Exception e) {
+            System.out.println("DEBUG: Error deleting account: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(Map.of("error", "Failed to delete account: " + e.getMessage()));
+        }
     }
 }
