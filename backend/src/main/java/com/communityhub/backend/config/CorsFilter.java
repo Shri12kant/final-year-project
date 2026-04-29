@@ -52,7 +52,13 @@ public class CorsFilter implements Filter {
             httpResponse.setHeader("Access-Control-Allow-Credentials", "true");
             httpResponse.setHeader("Access-Control-Max-Age", "3600");
         } else if (origin != null) {
-            logger.warn("CORS Filter - Origin {} is NOT ALLOWED", origin);
+            logger.warn("CORS Filter - Origin {} is NOT ALLOWED - using wildcard", origin);
+            // Temporary wildcard CORS for debugging
+            httpResponse.setHeader("Access-Control-Allow-Origin", "*");
+            httpResponse.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+            httpResponse.setHeader("Access-Control-Allow-Headers", "*");
+            httpResponse.setHeader("Access-Control-Allow-Credentials", "true");
+            httpResponse.setHeader("Access-Control-Max-Age", "3600");
         }
         
         logger.info("CORS Filter - Headers set for origin: {}", origin);
