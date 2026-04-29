@@ -39,7 +39,6 @@ com\communityhub\backend\security\SecurityUser.class
 com\communityhub\backend\model\EmailVerification$EmailVerificationBuilder.class
 com\communityhub\backend\controller\CommentController$AddCommentRequest.class
 com\communityhub\backend\repository\CommentRepository.class
-com\communityhub\backend\config\CorsFilter.class
 com\communityhub\backend\model\Comment.class
 com\communityhub\backend\user\User$Builder.class
 com\communityhub\backend\config\WebConfig.class
