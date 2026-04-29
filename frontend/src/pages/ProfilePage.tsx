@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { postsApi } from '../api/postsApi'
-import { userApi, type UserProfile } from '../api/userApi'
+import { userApi } from '../api/userApi'
 import { ProfilePictureUpload } from '../components/ProfilePictureUpload'
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
@@ -18,7 +18,7 @@ export function ProfilePage() {
     karma: 1250,
     postCount: 42,
     commentCount: 156,
-    profileImage: undefined // Will be loaded from API
+    profileImage: undefined as string | undefined // Will be loaded from API
   })
 
   const queryClient = useQueryClient()
@@ -60,33 +60,27 @@ export function ProfilePage() {
 
   const handleProfilePictureChange = (file: File) => {
     console.log('Profile picture selected:', file.name)
-    
-    // Upload directly to backend API
     if (file) {
       updateProfileImage(file)
     }
   }
 
   const updateProfileImage = (file: File) => {
-    // Upload to backend API
     uploadProfileImageMutation.mutate(file)
   }
 
-  // Mock user posts (will come from API later)
   const { data: userPosts = [], isLoading } = useQuery({
     queryKey: ['user-posts', username],
-    queryFn: () => postsApi.fetchPosts(), // Will be replaced with user-specific API
+    queryFn: () => postsApi.fetchPosts(),
     enabled: !!username
   })
 
-  // Debug profile image state
   useEffect(() => {
     console.log('Current user.profileImage in ProfilePage:', user.profileImage)
   }, [user.profileImage])
 
   return (
     <div className="space-y-6">
-      {/* User Info Card */}
       <div
         className="rounded-xl border p-6"
         style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
@@ -109,7 +103,6 @@ export function ProfilePage() {
           </div>
         </div>
 
-        {/* User Stats */}
         <div className="mt-6 grid grid-cols-3 gap-4">
           <div className="text-center">
             <div className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
@@ -138,7 +131,6 @@ export function ProfilePage() {
         </div>
       </div>
 
-      {/* Recent Posts */}
       <div
         className="rounded-xl border p-6"
         style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
@@ -154,7 +146,7 @@ export function ProfilePage() {
           <div className="space-y-3">
             {userPosts.slice(0, 5).map((post) => (
               <div key={post.id} className="border-b pb-3" style={{ borderColor: 'var(--border)' }}>
-                <Link 
+                <Link
                   to={`/post/${post.id}`}
                   className="block hover:opacity-80 transition-opacity"
                   style={{ color: 'var(--text-primary)' }}
@@ -174,12 +166,11 @@ export function ProfilePage() {
         )}
       </div>
 
-      {/* Action Buttons */}
       <div className="flex gap-3">
         <button
           className="px-4 py-2 rounded-lg border text-sm font-medium transition-all hover:scale-105"
-          style={{ 
-            borderColor: 'var(--border)', 
+          style={{
+            borderColor: 'var(--border)',
             background: 'var(--surface)',
             color: 'var(--text-primary)'
           }}
@@ -188,7 +179,7 @@ export function ProfilePage() {
         </button>
         <button
           className="px-4 py-2 rounded-lg text-sm font-medium transition-all hover:scale-105"
-          style={{ 
+          style={{
             background: 'var(--accent)',
             color: 'white'
           }}
@@ -199,4 +190,3 @@ export function ProfilePage() {
     </div>
   )
 }
-
