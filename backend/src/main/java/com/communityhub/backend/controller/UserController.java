@@ -135,4 +135,33 @@ public class UserController {
 
         return ResponseEntity.ok(Map.of("message", "Profile image removed successfully"));
     }
+
+    @DeleteMapping("/account")
+    public ResponseEntity<Map<String, String>> deleteAccount(@AuthenticationPrincipal UserDetails userDetails) {
+        System.out.println("DEBUG: /users/account delete endpoint called");
+        
+        if (userDetails == null) {
+            System.out.println("DEBUG: userDetails is null");
+            return ResponseEntity.status(401).build();
+        }
+
+        String username = userDetails.getUsername();
+        System.out.println("DEBUG: Deleting account for username: " + username);
+        
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        
+        if (userOpt.isEmpty()) {
+            System.out.println("DEBUG: User not found for username: " + username);
+            return ResponseEntity.notFound().build();
+        }
+
+        User user = userOpt.get();
+        System.out.println("DEBUG: User found, deleting account: " + user.getUsername());
+        
+        // Delete user from database (cascade delete will handle related data)
+        userRepository.delete(user);
+        System.out.println("DEBUG: User deleted from database");
+        
+        return ResponseEntity.ok(Map.of("message", "Account deleted successfully"));
+    }
 }

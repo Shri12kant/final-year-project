@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { postsApi } from '../api/postsApi'
 import { userApi } from '../api/userApi'
 import { ProfilePictureUpload } from '../components/ProfilePictureUpload'
@@ -9,6 +9,8 @@ import { toast } from 'sonner'
 
 export function ProfilePage() {
   const { username } = useParams()
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   // Mock user data (will come from API later)
   const [user, setUser] = useState({
@@ -21,7 +23,8 @@ export function ProfilePage() {
     profileImage: undefined as string | undefined // Will be loaded from API
   })
 
-  const queryClient = useQueryClient()
+  // Delete account dialog state
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
   // Load user profile from API
   const { data: userProfile } = useQuery({
@@ -29,6 +32,27 @@ export function ProfilePage() {
     queryFn: () => userApi.getProfile(),
     enabled: true
   })
+
+  // Delete account mutation
+  const deleteAccountMutation = useMutation({
+    mutationFn: userApi.deleteAccount,
+    onSuccess: () => {
+      toast.success('✅ Account deleted successfully!')
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] })
+      // Clear auth state and redirect to register
+      setTimeout(() => {
+        navigate('/register', { replace: true })
+      }, 1500)
+    },
+    onError: (error) => {
+      console.error('Failed to delete account:', error)
+      toast.error('❌ Failed to delete account. Please try again.')
+    }
+  })
+
+  const handleDeleteAccount = () => {
+    deleteAccountMutation.mutate()
+  }
 
   // Update local state when API data changes
   useEffect(() => {
@@ -186,7 +210,76 @@ export function ProfilePage() {
         >
           Message
         </button>
+        <button
+          onClick={() => setShowDeleteDialog(true)}
+          className="px-4 py-2 rounded-lg text-sm font-medium transition-all hover:scale-105"
+          style={{
+            background: '#ef4444',
+            color: 'white'
+          }}
+        >
+          Delete Account
+        </button>
       </div>
+
+      {/* Delete Account Confirmation Dialog */}
+      {showDeleteDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div 
+            className="rounded-xl p-6 max-w-md mx-4"
+            style={{ 
+              background: 'var(--surface)', 
+              borderColor: 'var(--border)',
+              borderWidth: '1px'
+            }}
+          >
+            <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
+              ⚠️ Delete Account
+            </h2>
+            <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
+              Are you sure you want to delete your account? This action cannot be undone and will permanently remove:
+              <br /><br />
+              • Your profile and posts<br />
+              • All your comments and votes<br />
+              • Your account data
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowDeleteDialog(false)}
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-all hover:scale-105"
+                style={{
+                  borderColor: 'var(--border)',
+                  background: 'var(--surface)',
+                  color: 'var(--text-primary)'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleteAccountMutation.isPending}
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  background: '#ef4444',
+                  color: 'white'
+                }}
+              >
+                {deleteAccountMutation.isPending ? (
+                  <span className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Deleting...
+                  </span>
+                ) : (
+                  'Delete Account'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

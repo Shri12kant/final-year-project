@@ -27,5 +27,9 @@ export const userApi = {
 
   async removeProfileImage(): Promise<void> {
     await http.delete('/users/profile/image')
+  },
+
+  async deleteAccount(): Promise<void> {
+    await http.delete('/users/account')
   }
 }
