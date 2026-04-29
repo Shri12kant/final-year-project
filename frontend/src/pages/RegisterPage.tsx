@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { authApi } from '../api/authApi'
@@ -24,6 +25,7 @@ type FormValues = z.infer<typeof schema>
 export function RegisterPage() {
   const navigate = useNavigate()
   const setSession = useAuthStore((s) => s.setSession)
+  const [isLoading, setIsLoading] = useState(false)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -36,24 +38,37 @@ export function RegisterPage() {
   })
 
   const onSubmit = async (values: FormValues) => {
+    setIsLoading(true)
     try {
+      toast.loading('Creating account...', { id: 'register' })
+      
       const res = await authApi.register({
         username: values.username.trim(),
         email: values.email.trim().toLowerCase(),
         password: values.password,
       })
-      setSession({ user: res.user, tokens: { accessToken: res.accessToken } })
-      toast.success('Account created')
-      navigate('/', { replace: true })
+      
+      // Success feedback
+      toast.success('✅ Account created successfully! Redirecting to login...', { id: 'register' })
+      
+      // Small delay to show success message
+      setTimeout(() => {
+        setSession({ user: res.user, tokens: { accessToken: res.accessToken } })
+        navigate('/', { replace: true })
+      }, 1500)
+      
     } catch (e) {
+      setIsLoading(false)
+      toast.dismiss('register')
+      
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string } | undefined)?.message ??
           'Registration failed'
-        toast.error(String(msg))
+        toast.error(`❌ ${String(msg)}`, { duration: 5000 })
         return
       }
-      toast.error('Registration failed')
+      toast.error('❌ Registration failed. Please try again.', { duration: 5000 })
     }
   }
 
@@ -156,7 +171,8 @@ export function RegisterPage() {
 
           <button
             type="submit"
-            className="w-full rounded border px-3 py-2 text-sm font-medium text-white shadow-sm hover:opacity-95"
+            disabled={isLoading}
+            className="w-full rounded border px-3 py-2 text-sm font-medium text-white shadow-sm hover:opacity-95 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               borderColor:
                 'color-mix(in srgb, var(--accent) 55%, var(--border))',
@@ -164,7 +180,17 @@ export function RegisterPage() {
                 'linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent-2) 60%, var(--accent)))',
             }}
           >
-            Create account
+            {isLoading ? (
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Creating account...
+              </span>
+            ) : (
+              'Create account'
+            )}
           </button>
         </form>
 
