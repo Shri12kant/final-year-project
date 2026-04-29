@@ -2,7 +2,8 @@ import axios from 'axios'
 import { tokenStorage } from '../auth/tokenStorage'
 
 export const http = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8084',
+  // ✅ Fixed!
+  baseURL: import.meta.env.VITE_API_BASE_URL ?? 'https://final-year-project-production-666e.up.railway.app/api',
 })
 
 http.interceptors.request.use((config) => {
@@ -13,4 +14,3 @@ http.interceptors.request.use((config) => {
   }
   return config
 })
-
