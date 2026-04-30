@@ -73,18 +73,18 @@ export function LoginPage() {
           {/* Error Alert */}
           {loginError && (
             <div 
-              className="rounded-lg border p-3 text-sm"
+              className="rounded-lg border p-3 sm:p-4 text-sm sm:text-base"
               style={{ 
                 borderColor: '#ef4444', 
-                background: 'rgba(239, 68, 68, 0.1)',
+                background: 'rgba(239, 68, 68, 0.15)',
                 color: '#ef4444'
               }}
             >
-              <div className="flex items-center gap-2">
-                <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <div className="flex items-start gap-2">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                 </svg>
-                <span className="font-medium">{loginError}</span>
+                <span className="font-medium break-words leading-relaxed">{loginError}</span>
               </div>
             </div>
           )}

@@ -17,7 +17,7 @@ export function AppShell() {
           <RightPanel />
         </div>
       </div>
-      <Toaster richColors theme="system" />
+      <Toaster richColors theme="system" position="top-center" />
     </div>
   )
 }
