@@ -1,8 +1,6 @@
 [build]
-builder = "NIXPACKS"
-
-[deploy]
-startCommand = "mvn clean package && java -jar target/*.jar"
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
 
 [mounts]
 # Mount volume for persistent file storage
