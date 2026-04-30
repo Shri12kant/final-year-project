@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Post } from '../../api/postsApi'
 import { getCommunity } from '../communities/communityData'
@@ -13,8 +14,11 @@ type Props = {
 
 export function PostCard({ post, compact, voteScore }: Props) {
   const meta = getPostMeta(post.id)
-  const community = getCommunity(meta?.communitySlug) ?? getCommunity('general')
+  // Use post.communitySlug if available (from database), otherwise fall back to localStorage meta
+  const communitySlug = post.communitySlug || meta?.communitySlug || 'general'
+  const community = getCommunity(communitySlug)
   const mediaUrl = toMediaUrl(post.mediaUrl)
+  const [imageError, setImageError] = useState(false)
 
   return (
     <article className="flex overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-md hover:shadow-lg transition-all duration-300 hover:border-[var(--accent)]/30 hover:-translate-y-0.5">
@@ -52,18 +56,47 @@ export function PostCard({ post, compact, voteScore }: Props) {
         {!compact && post.content && (
           <p className="mt-2 line-clamp-2 text-sm text-[var(--text-muted)] leading-relaxed">{post.content}</p>
         )}
-        {mediaUrl && (
-          <div className="mt-3 overflow-hidden rounded-xl border border-[var(--border)] max-w-full">
+        {mediaUrl && !imageError && (
+          <div className="mt-3 overflow-hidden rounded-xl border border-[var(--border)] max-w-full bg-[var(--surface-muted)]">
             {post.mediaType === 'video' ? (
               <video
                 src={mediaUrl}
                 controls
                 preload="metadata"
+                crossOrigin="anonymous"
                 className="h-44 w-full bg-black object-contain sm:h-56"
-              />
+                onError={() => setImageError(true)}
+              >
+                <source src={mediaUrl} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
             ) : (
-              <img src={mediaUrl} alt="Post media" className="h-44 w-full object-cover sm:h-56 hover:scale-105 transition-transform duration-300" />
+              <img 
+                src={mediaUrl} 
+                alt="Post media" 
+                crossOrigin="anonymous"
+                className="h-44 w-full object-cover sm:h-56 hover:scale-105 transition-transform duration-300"
+                onError={() => setImageError(true)}
+                loading="lazy"
+              />
             )}
+          </div>
+        )}
+        
+        {imageError && (
+          <div className="mt-3 p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] text-center">
+            <svg className="w-8 h-8 mx-auto mb-2 text-[var(--muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <p className="text-xs text-[var(--muted)]">Media could not be loaded</p>
+            <a 
+              href={mediaUrl || '#'} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-xs text-[var(--accent)] hover:underline mt-1 inline-block"
+            >
+              Try opening directly
+            </a>
           </div>
         )}
         <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-[var(--text-muted)]">

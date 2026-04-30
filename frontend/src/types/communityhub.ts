@@ -8,6 +8,7 @@ export type PostDto = {
   createdAt: string
   upvotes?: number
   downvotes?: number
+  communitySlug?: string | null
 }
 
 export type CommentDto = {
