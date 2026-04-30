@@ -32,7 +32,7 @@ export const postsApi = {
     return res.data
   },
 
-  createPost: async (input: { title: string; content: string; username?: string; communitySlug?: string }) => {
+  createPost: async (input: { title: string; content: string; username?: string; communitySlug?: string; imageUrl?: string }) => {
     const res = await http.post<PostDto>('/api/posts', input)
     // Auto reload page to show new notifications
     window.location.reload()

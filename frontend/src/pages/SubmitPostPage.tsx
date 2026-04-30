@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { toast } from 'sonner'
 import { postsApi } from '../api/postsApi'
 import { communitiesApi, type Community } from '../api/communitiesApi'
+import { uploadImage } from '../api/imagesApi'
 
 const schema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
@@ -57,19 +58,24 @@ export function SubmitPostPage() {
   const selectedCommunity = communities.find((c: Community) => c.slug === form.watch('communitySlug'))
 
   const create = useMutation({
-    mutationFn: (values: FormValues) => {
+    mutationFn: async (values: FormValues) => {
+      let imageUrl: string | undefined = undefined
+      
+      // Upload image to Cloudinary if present
       if (mediaFile) {
-        return postsApi.createPostWithMedia({
-          title: values.title,
-          content: values.content,
-          file: mediaFile,
-          communitySlug: values.communitySlug,
-        })
+        const uploadResult = await uploadImage(mediaFile)
+        if (!uploadResult.success || !uploadResult.url) {
+          throw new Error(uploadResult.error || 'Image upload failed')
+        }
+        imageUrl = uploadResult.url
       }
+      
+      // Create post with Cloudinary URL
       return postsApi.createPost({
         title: values.title,
         content: values.content,
         communitySlug: values.communitySlug,
+        imageUrl,
       })
     },
     onSuccess: async (post) => {
@@ -78,7 +84,7 @@ export function SubmitPostPage() {
       navigate(`/post/${post.id}`, { replace: true })
     },
     onError: (error: any) => {
-      const message = error.response?.data?.error || 'Could not create post — are you logged in?'
+      const message = error.response?.data?.error || error.message || 'Could not create post — are you logged in?'
       toast.error(message)
     },
   })

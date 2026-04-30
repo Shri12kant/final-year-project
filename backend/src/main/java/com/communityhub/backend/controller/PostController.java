@@ -45,6 +45,8 @@ public class PostController {
                 .content(request.getContent())
                 .username(username)
                 .communitySlug(request.getCommunitySlug())
+                .mediaUrl(request.getImageUrl())
+                .mediaType(request.getImageUrl() != null ? "image" : null)
                 .build();
         return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(post));
     }
@@ -152,24 +154,21 @@ public class PostController {
 
     
     public static class CreatePostRequest {
-        @NotBlank
+        @NotBlank(message = "title is required")
         private String title;
-        @NotBlank
         private String content;
-        /**
-         * Optional override. If omitted, the authenticated user's username is used.
-         */
         private String username;
-        
         private String communitySlug;
+        private String imageUrl;
 
         public CreatePostRequest() {}
 
-        public CreatePostRequest(String title, String content, String username, String communitySlug) {
+        public CreatePostRequest(String title, String content, String username, String communitySlug, String imageUrl) {
             this.title = title;
             this.content = content;
             this.username = username;
             this.communitySlug = communitySlug;
+            this.imageUrl = imageUrl;
         }
 
         public String getTitle() {
@@ -202,6 +201,14 @@ public class PostController {
 
         public void setCommunitySlug(String communitySlug) {
             this.communitySlug = communitySlug;
+        }
+
+        public String getImageUrl() {
+            return imageUrl;
+        }
+
+        public void setImageUrl(String imageUrl) {
+            this.imageUrl = imageUrl;
         }
     }
 
