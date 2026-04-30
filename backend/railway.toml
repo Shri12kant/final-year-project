@@ -1,0 +1,7 @@
+[deploy]
+startCommand = "java -jar target/*.jar"
+
+[mounts]
+# Mount volume for persistent file storage
+mountPath = "/app/uploads"
+name = "uploads-volume"
