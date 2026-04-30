@@ -109,13 +109,13 @@ export function ProfilePage() {
         className="rounded-xl border p-6"
         style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
       >
-        <div className="flex items-start gap-4">
+        <div className="flex flex-col sm:flex-row items-start gap-4">
           <ProfilePictureUpload
             currentImage={user.profileImage}
             onImageChange={handleProfilePictureChange}
           />
-          <div className="flex-1">
-            <h1 className="text-2xl font-semibold tracking-tight">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight break-words">
               @{user.username}
             </h1>
             <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -127,9 +127,9 @@ export function ProfilePage() {
           </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-3 gap-4">
+        <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-4">
           <div className="text-center">
-            <div className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+            <div className="text-xl sm:text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
               {user.karma}
             </div>
             <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
@@ -137,7 +137,7 @@ export function ProfilePage() {
             </div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+            <div className="text-xl sm:text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
               {user.postCount}
             </div>
             <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
@@ -145,7 +145,7 @@ export function ProfilePage() {
             </div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+            <div className="text-xl sm:text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
               {user.commentCount}
             </div>
             <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
@@ -190,9 +190,9 @@ export function ProfilePage() {
         )}
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-2 sm:gap-3">
         <button
-          className="px-4 py-2 rounded-lg border text-sm font-medium transition-all hover:scale-105"
+          className="px-3 sm:px-4 py-2 rounded-lg border text-sm font-medium transition-all hover:scale-105 flex-1 sm:flex-none"
           style={{
             borderColor: 'var(--border)',
             background: 'var(--surface)',
@@ -202,7 +202,7 @@ export function ProfilePage() {
           Edit Profile
         </button>
         <button
-          className="px-4 py-2 rounded-lg text-sm font-medium transition-all hover:scale-105"
+          className="px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all hover:scale-105 flex-1 sm:flex-none"
           style={{
             background: 'var(--accent)',
             color: 'white'
@@ -212,7 +212,7 @@ export function ProfilePage() {
         </button>
         <button
           onClick={() => setShowDeleteDialog(true)}
-          className="px-4 py-2 rounded-lg text-sm font-medium transition-all hover:scale-105"
+          className="px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all hover:scale-105 flex-1 sm:flex-none"
           style={{
             background: '#ef4444',
             color: 'white'
