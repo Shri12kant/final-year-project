@@ -42,6 +42,9 @@ public class Post {
     @Column(nullable = false)
     private Integer downvotes = 0;
 
+    @Column(length = 50)
+    private String communitySlug;
+
     @PrePersist
     public void onCreate() {
         if (createdAt == null) {
@@ -122,6 +125,14 @@ public class Post {
         this.downvotes = downvotes;
     }
 
+    public String getCommunitySlug() {
+        return communitySlug;
+    }
+
+    public void setCommunitySlug(String communitySlug) {
+        this.communitySlug = communitySlug;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -136,6 +147,7 @@ public class Post {
         private LocalDateTime createdAt;
         private Integer upvotes = 0;
         private Integer downvotes = 0;
+        private String communitySlug;
 
         public Builder id(Long id) {
             this.id = id;
@@ -182,6 +194,11 @@ public class Post {
             return this;
         }
 
+        public Builder communitySlug(String communitySlug) {
+            this.communitySlug = communitySlug;
+            return this;
+        }
+
         public Post build() {
             Post post = new Post();
             post.id = this.id;
@@ -193,6 +210,7 @@ public class Post {
             post.createdAt = this.createdAt;
             post.upvotes = this.upvotes;
             post.downvotes = this.downvotes;
+            post.communitySlug = this.communitySlug;
             return post;
         }
     }

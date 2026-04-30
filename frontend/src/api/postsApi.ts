@@ -32,7 +32,7 @@ export const postsApi = {
     return res.data
   },
 
-  createPost: async (input: { title: string; content: string; username?: string }) => {
+  createPost: async (input: { title: string; content: string; username?: string; communitySlug?: string }) => {
     const res = await http.post<PostDto>('/api/posts', input)
     // Auto reload page to show new notifications
     window.location.reload()
@@ -44,11 +44,13 @@ export const postsApi = {
     content: string
     file: File
     username?: string
+    communitySlug?: string
   }) => {
     const form = new FormData()
     form.append('title', input.title)
     form.append('content', input.content)
     if (input.username) form.append('username', input.username)
+    if (input.communitySlug) form.append('communitySlug', input.communitySlug)
     form.append('file', input.file)
     const res = await http.post<PostDto>('/api/posts/with-media', form)
     // Auto reload page to show new notifications

@@ -44,6 +44,7 @@ public class PostController {
                 .title(request.getTitle())
                 .content(request.getContent())
                 .username(username)
+                .communitySlug(request.getCommunitySlug())
                 .build();
         return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(post));
     }
@@ -53,6 +54,7 @@ public class PostController {
             @AuthenticationPrincipal SecurityUser user,
             @RequestParam("title") String title,
             @RequestParam("content") String content,
+            @RequestParam(value = "communitySlug", required = false) String communitySlug,
             @RequestParam(value = "username", required = false) String username,
             @RequestPart("file") MultipartFile file
     ) {
@@ -72,6 +74,7 @@ public class PostController {
                 .title(title.trim())
                 .content(content.trim())
                 .username(effectiveUsername)
+                .communitySlug(communitySlug)
                 .mediaUrl(stored.mediaUrl())
                 .mediaType(stored.mediaType())
                 .build();
@@ -157,13 +160,16 @@ public class PostController {
          * Optional override. If omitted, the authenticated user's username is used.
          */
         private String username;
+        
+        private String communitySlug;
 
         public CreatePostRequest() {}
 
-        public CreatePostRequest(String title, String content, String username) {
+        public CreatePostRequest(String title, String content, String username, String communitySlug) {
             this.title = title;
             this.content = content;
             this.username = username;
+            this.communitySlug = communitySlug;
         }
 
         public String getTitle() {
@@ -188,6 +194,14 @@ public class PostController {
 
         public void setUsername(String username) {
             this.username = username;
+        }
+
+        public String getCommunitySlug() {
+            return communitySlug;
+        }
+
+        public void setCommunitySlug(String communitySlug) {
+            this.communitySlug = communitySlug;
         }
     }
 
