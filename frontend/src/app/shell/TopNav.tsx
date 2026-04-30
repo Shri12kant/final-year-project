@@ -1,14 +1,12 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../auth/useAuthStore'
 import { cn } from '../../lib/cn'
-import { useThemeStore } from '../../theme/useThemeStore'
 import { NotificationBell } from '../../features/notifications/NotificationBell'
 import { useState } from 'react'
 
 export function TopNav() {
   const navigate = useNavigate()
   const { user, logout, hydrated, tokens } = useAuthStore()
-  const { mode, toggle } = useThemeStore()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
@@ -62,18 +60,6 @@ export function TopNav() {
         </nav>
 
         <div className="flex items-center gap-2 text-sm">
-          {/* Theme toggle - visible on all screens */}
-          <button
-            className="rounded border px-2 py-1.5 sm:px-3 transition-colors hover:bg-black/5 dark:hover:bg-white/10"
-            onClick={toggle}
-            aria-label="Toggle theme"
-            title="Toggle theme"
-            style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}
-          >
-            <span className="hidden sm:inline">{mode === 'dark' ? 'Dark' : 'Light'}</span>
-            <span className="sm:hidden">{mode === 'dark' ? '🌙' : '☀️'}</span>
-          </button>
-
           {/* Desktop User Actions */}
           <div className="hidden md:flex items-center gap-2">
             {!hydrated && tokens?.accessToken ? (

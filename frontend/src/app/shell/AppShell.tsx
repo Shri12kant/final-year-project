@@ -3,7 +3,6 @@ import { TopNav } from './TopNav'
 import { Toaster } from 'sonner'
 import { LeftSidebar } from './LeftSidebar'
 import { RightPanel } from './RightPanel'
-import { ThemeToggle } from '../../components/ThemeToggle'
 
 export function AppShell() {
   return (
@@ -19,7 +18,6 @@ export function AppShell() {
         </div>
       </div>
       <Toaster richColors theme="system" />
-      <ThemeToggle />
     </div>
   )
 }
