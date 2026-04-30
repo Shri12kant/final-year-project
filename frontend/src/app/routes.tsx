@@ -13,6 +13,7 @@ import { ProfilePage } from '../pages/ProfilePage'
 import { RegisterPage } from '../pages/RegisterPage'
 import { SettingsPage } from '../pages/SettingsPage'
 import { SubmitPostPage } from '../pages/SubmitPostPage'
+import { CreateCommunityPage } from '../pages/CreateCommunityPage'
 
 export function AppRoutes() {
   return (
@@ -43,6 +44,15 @@ export function AppRoutes() {
           element={
             <ProtectedRoute>
               <SettingsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="create-community"
+          element={
+            <ProtectedRoute>
+              <CreateCommunityPage />
             </ProtectedRoute>
           }
         />
