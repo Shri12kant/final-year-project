@@ -53,18 +53,27 @@ export function LoginPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-md px-4 py-10">
+    <div className="mx-auto w-full max-w-md px-4 py-8 sm:py-12">
+      {/* Logo Header */}
+      <div className="text-center mb-6">
+        <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-[var(--accent)] to-[var(--accent-2)] flex items-center justify-center shadow-lg">
+          <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        </div>
+        <h1 className="text-2xl font-bold tracking-tight text-[var(--text)]">Welcome back</h1>
+        <p className="mt-1 text-sm text-[var(--muted)]">
+          Sign in to your CommunityHub account
+        </p>
+      </div>
+
       <div
-        className="rounded-2xl border p-6 shadow-xl"
+        className="rounded-2xl border p-6 sm:p-8 shadow-xl"
         style={{
           borderColor: 'var(--border)',
           background: 'var(--surface)',
         }}
       >
-        <h1 className="text-xl font-semibold tracking-tight">Login</h1>
-        <p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>
-          Sign in to join communities and post.
-        </p>
 
         <form
           className="mt-6 space-y-4"
@@ -90,11 +99,14 @@ export function LoginPage() {
           )}
 
           <div>
-            <label className="text-sm font-medium" style={{ color: 'var(--muted)' }}>
+            <label className="text-sm font-medium flex items-center gap-1.5" style={{ color: 'var(--muted)' }}>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+              </svg>
               Email
             </label>
             <input
-              className={`mt-1 w-full rounded border px-3 py-2 text-sm outline-none focus:ring-2 transition-colors ${
+              className={`mt-1.5 w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)]/20 transition-all duration-200 ${
                 loginError || form.formState.errors.email ? 'border-red-500 focus:border-red-500' : ''
               }`}
               placeholder="you@example.com"
@@ -115,15 +127,18 @@ export function LoginPage() {
           </div>
 
           <div>
-            <label className="text-sm font-medium" style={{ color: 'var(--muted)' }}>
+            <label className="text-sm font-medium flex items-center gap-1.5" style={{ color: 'var(--muted)' }}>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
               Password
             </label>
             <input
               type="password"
-              className={`mt-1 w-full rounded border px-3 py-2 text-sm outline-none focus:ring-2 transition-colors ${
+              className={`mt-1.5 w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)]/20 transition-all duration-200 ${
                 loginError || form.formState.errors.password ? 'border-red-500 focus:border-red-500' : ''
               }`}
-              placeholder="••••••••"
+              placeholder="Enter your password"
               {...form.register('password')}
               style={{
                 borderColor: loginError || form.formState.errors.password ? '#ef4444' : 'var(--border)',
@@ -142,23 +157,26 @@ export function LoginPage() {
 
           <button
             type="submit"
-            className="w-full rounded border px-3 py-2 text-sm font-medium text-white shadow-sm hover:opacity-95"
+            className="w-full rounded-xl border px-4 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl hover:opacity-95 transition-all duration-200 flex items-center justify-center gap-2"
             style={{
-              borderColor:
-                'color-mix(in srgb, var(--accent) 55%, var(--border))',
-              background:
-                'linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent-2) 60%, var(--accent)))',
+              borderColor: 'transparent',
+              background: 'linear-gradient(135deg, var(--accent), var(--accent-2))',
             }}
           >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+            </svg>
             Sign in
           </button>
         </form>
 
-        <div className="mt-4 text-sm" style={{ color: 'var(--muted)' }}>
-          New here?{' '}
-          <Link to="/register" className="font-medium underline">
-            Create an account
-          </Link>
+        <div className="mt-6 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
+          <p className="text-sm text-center" style={{ color: 'var(--muted)' }}>
+            New to CommunityHub?{' '}
+            <Link to="/register" className="font-semibold text-[var(--accent)] hover:underline transition-colors">
+              Create an account
+            </Link>
+          </p>
         </div>
       </div>
     </div>
