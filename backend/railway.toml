@@ -1,5 +1,8 @@
+[build]
+builder = "NIXPACKS"
+
 [deploy]
-startCommand = "java -jar target/*.jar"
+startCommand = "mvn clean package && java -jar target/*.jar"
 
 [mounts]
 # Mount volume for persistent file storage
