@@ -29,10 +29,18 @@ public class MediaController {
     public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
         logger.info("MediaController: Requested file: {}", filename);
         logger.info("MediaController: Upload directory config: {}", uploadDir);
+        logger.info("MediaController: Current working directory: {}", System.getProperty("user.dir"));
         
         try {
-            // Get the absolute path
-            Path basePath = Paths.get(uploadDir).toAbsolutePath().normalize();
+            // Get the absolute path - try different approaches
+            Path basePath;
+            File uploadDirFile = new File(uploadDir);
+            if (uploadDirFile.isAbsolute()) {
+                basePath = uploadDirFile.toPath().normalize();
+            } else {
+                basePath = Paths.get(System.getProperty("user.dir"), uploadDir).toAbsolutePath().normalize();
+            }
+            
             Path filePath = basePath.resolve(filename);
             
             logger.info("MediaController: Base path: {}", basePath);
@@ -96,5 +104,42 @@ public class MediaController {
             return "video/webm";
         }
         return "application/octet-stream";
+    }
+    
+    // Diagnostic endpoint to list files
+    @GetMapping("/debug/list-files")
+    public ResponseEntity<String> listFiles() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Working Directory: ").append(System.getProperty("user.dir")).append("\n");
+        sb.append("Upload Directory Config: ").append(uploadDir).append("\n\n");
+        
+        try {
+            File uploadDirFile = new File(uploadDir);
+            if (!uploadDirFile.isAbsolute()) {
+                uploadDirFile = new File(System.getProperty("user.dir"), uploadDir);
+            }
+            
+            sb.append("Resolved Path: ").append(uploadDirFile.getAbsolutePath()).append("\n");
+            sb.append("Path Exists: ").append(uploadDirFile.exists()).append("\n");
+            sb.append("Is Directory: ").append(uploadDirFile.isDirectory()).append("\n\n");
+            
+            if (uploadDirFile.exists() && uploadDirFile.isDirectory()) {
+                File[] files = uploadDirFile.listFiles();
+                if (files != null && files.length > 0) {
+                    sb.append("Files found (").append(files.length).append("):\n");
+                    for (File file : files) {
+                        sb.append("  - ").append(file.getName())
+                          .append(" (").append(file.length()).append(" bytes)\n");
+                    }
+                } else {
+                    sb.append("No files found in directory\n");
+                }
+            }
+            
+            return ResponseEntity.ok(sb.toString());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body("Error: " + e.getMessage());
+        }
     }
 }
