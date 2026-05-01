@@ -13,6 +13,7 @@ export function NotificationBell() {
     refetchInterval: 5000, // Auto refresh every 5 seconds
     retry: 2, // Retry twice on failure
     staleTime: 3000, // Consider data fresh for 3 seconds
+    initialData: { count: 0 }, // Default value to prevent undefined
   })
 
   const { data: notifications = [], error: notificationsError } = useQuery<NotificationDto[]>({
@@ -111,10 +112,6 @@ export function NotificationBell() {
   }, [])
 
   const unreadCount = countData?.count || 0
-
-  // Debug logs
-  console.log('Notification count data:', countData, 'Error:', countError, 'Unread count:', unreadCount)
-  console.log('Count data type:', typeof countData, 'Keys:', countData ? Object.keys(countData) : 'null')
 
   // Show error state if there are issues
   const hasError = countError || notificationsError
