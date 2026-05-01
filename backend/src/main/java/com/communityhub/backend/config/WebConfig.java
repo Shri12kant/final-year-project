@@ -14,15 +14,20 @@ public class WebConfig {
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {
-        logger.info("WebConfig CORS bean initialized - allowing all origins");
+        logger.info("WebConfig CORS bean initialized - allowing Vercel and localhost");
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
+                        .allowedOrigins(
+                            "http://localhost:5173",
+                            "http://localhost:3000",
+                            "https://final-year-project-phi-ten.vercel.app"
+                        )
                         .allowedOriginPatterns("*")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                         .allowedHeaders("*")
-                        .allowCredentials(false)
+                        .allowCredentials(true)
                         .maxAge(3600);
             }
         };
