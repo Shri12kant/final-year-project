@@ -25,16 +25,74 @@ export function NotificationBell() {
 
   const markAsReadMutation = useMutation({
     mutationFn: (notificationId: number) => notificationsApi.markAsRead(notificationId),
-    onSuccess: () => {
+    onMutate: async () => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['notifications'] })
+      
+      // Snapshot previous value
+      const previousCount = queryClient.getQueryData(['notifications', 'count'])
+      const previousUnread = queryClient.getQueryData(['notifications', 'unread'])
+      
+      // Optimistically update count
+      queryClient.setQueryData(['notifications', 'count'], (old: any) => {
+        if (!old) return { count: 0 }
+        return { count: Math.max(0, old.count - 1) }
+      })
+      
+      // Optimistically update unread list
+      queryClient.setQueryData(['notifications', 'unread'], (old: any) => {
+        if (!old) return []
+        return old.filter((n: any) => n.id !== undefined)
+      })
+      
+      return { previousCount, previousUnread }
+    },
+    onError: (_error, _variables, context) => {
+      // Restore on error
+      if (context?.previousCount) {
+        queryClient.setQueryData(['notifications', 'count'], context.previousCount)
+      }
+      if (context?.previousUnread) {
+        queryClient.setQueryData(['notifications', 'unread'], context.previousUnread)
+      }
+    },
+    onSettled: () => {
+      // Refetch to ensure consistency
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
     },
   })
 
   const markAllAsReadMutation = useMutation({
     mutationFn: () => notificationsApi.markAllAsRead(),
+    onMutate: async () => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['notifications'] })
+      
+      // Snapshot previous value
+      const previousCount = queryClient.getQueryData(['notifications', 'count'])
+      const previousUnread = queryClient.getQueryData(['notifications', 'unread'])
+      
+      // Optimistically update count to 0
+      queryClient.setQueryData(['notifications', 'count'], { count: 0 })
+      queryClient.setQueryData(['notifications', 'unread'], [])
+      
+      return { previousCount, previousUnread }
+    },
+    onError: (_error, _variables, context) => {
+      // Restore on error
+      if (context?.previousCount) {
+        queryClient.setQueryData(['notifications', 'count'], context.previousCount)
+      }
+      if (context?.previousUnread) {
+        queryClient.setQueryData(['notifications', 'unread'], context.previousUnread)
+      }
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] })
       setIsOpen(false)
+    },
+    onSettled: () => {
+      // Refetch to ensure consistency
+      queryClient.invalidateQueries({ queryKey: ['notifications'] })
     },
   })
 
