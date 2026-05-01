@@ -59,8 +59,8 @@ export function ProfilePage() {
     if (userProfile) {
       setUser(prev => ({
         ...prev,
-        username: userProfile.username,
-        profileImage: userProfile.profileImage
+        username: userProfile.username || prev.username,
+        profileImage: userProfile.profileImage || undefined
       }))
     }
   }, [userProfile])
