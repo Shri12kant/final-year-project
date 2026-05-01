@@ -14,7 +14,12 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/images")
-@CrossOrigin(origins = "*")
+@CrossOrigin(
+    origins = {"http://localhost:5173", "http://localhost:3000", "https://final-year-project-phi-ten.vercel.app"},
+    allowedHeaders = "*",
+    methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.OPTIONS},
+    allowCredentials = "false"
+)
 public class ImageUploadController {
 
     private static final Logger logger = LoggerFactory.getLogger(ImageUploadController.class);

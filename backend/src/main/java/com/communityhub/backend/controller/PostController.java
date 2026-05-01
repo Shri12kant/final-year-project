@@ -23,6 +23,12 @@ import java.util.List;
 @RequestMapping("/api/posts")
 @RequiredArgsConstructor
 @Validated
+@CrossOrigin(
+    origins = {"http://localhost:5173", "http://localhost:3000", "https://final-year-project-phi-ten.vercel.app"},
+    allowedHeaders = "*",
+    methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS},
+    allowCredentials = "false"
+)
 public class PostController {
 
     private final PostService postService;
