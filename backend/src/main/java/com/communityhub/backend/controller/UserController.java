@@ -28,32 +28,43 @@ public class UserController {
     public ResponseEntity<Map<String, Object>> getUserProfile(@AuthenticationPrincipal UserDetails userDetails) {
         System.out.println("DEBUG: /users/profile endpoint called");
         
-        if (userDetails == null) {
-            System.out.println("DEBUG: userDetails is null");
-            return ResponseEntity.status(401).build();
+        try {
+            if (userDetails == null) {
+                System.out.println("DEBUG: userDetails is null");
+                return ResponseEntity.status(401).build();
+            }
+
+            String username = userDetails.getUsername();
+            System.out.println("DEBUG: Getting profile for username: " + username);
+            
+            if (username == null || username.isEmpty()) {
+                System.out.println("DEBUG: username is null or empty");
+                return ResponseEntity.badRequest().build();
+            }
+            
+            Optional<User> userOpt = userRepository.findByUsername(username);
+            
+            if (userOpt.isEmpty()) {
+                System.out.println("DEBUG: User not found for username: " + username);
+                return ResponseEntity.notFound().build();
+            }
+
+            User user = userOpt.get();
+            System.out.println("DEBUG: User found, profileImage: " + user.getProfileImage());
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("username", user.getUsername() != null ? user.getUsername() : "");
+            response.put("email", user.getEmail() != null ? user.getEmail() : "");
+            response.put("profileImage", user.getProfileImage() != null ? user.getProfileImage() : "");
+            response.put("createdAt", user.getCreatedAt() != null ? user.getCreatedAt() : "");
+
+            System.out.println("DEBUG: Response profileImage: " + response.get("profileImage"));
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.out.println("DEBUG: Exception in /users/profile: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(Map.of("error", "Failed to get profile: " + e.getMessage()));
         }
-
-        String username = userDetails.getUsername();
-        System.out.println("DEBUG: Getting profile for username: " + username);
-        
-        Optional<User> userOpt = userRepository.findByUsername(username);
-        
-        if (userOpt.isEmpty()) {
-            System.out.println("DEBUG: User not found for username: " + username);
-            return ResponseEntity.notFound().build();
-        }
-
-        User user = userOpt.get();
-        System.out.println("DEBUG: User found, profileImage: " + user.getProfileImage());
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("username", user.getUsername());
-        response.put("email", user.getEmail());
-        response.put("profileImage", user.getProfileImage());
-        response.put("createdAt", user.getCreatedAt());
-
-        System.out.println("DEBUG: Response profileImage: " + response.get("profileImage"));
-        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/profile/image")

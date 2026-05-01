@@ -3,7 +3,6 @@ package com.communityhub.backend.controller;
 import com.communityhub.backend.model.Post;
 import com.communityhub.backend.model.Vote;
 import com.communityhub.backend.security.SecurityUser;
-import com.communityhub.backend.service.MediaStorageService;
 import com.communityhub.backend.service.PostService;
 import com.communityhub.backend.service.VoteService;
 import jakarta.validation.Valid;
@@ -16,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,7 +26,6 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
-    private final MediaStorageService mediaStorageService;
     private final VoteService voteService;
 
     @PostMapping
@@ -47,38 +44,6 @@ public class PostController {
                 .communitySlug(request.getCommunitySlug())
                 .mediaUrl(request.getImageUrl())
                 .mediaType(request.getImageUrl() != null ? "image" : null)
-                .build();
-        return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(post));
-    }
-
-    @PostMapping(value = "/with-media", consumes = {"multipart/form-data"})
-    public ResponseEntity<Post> createPostWithMedia(
-            @AuthenticationPrincipal SecurityUser user,
-            @RequestParam("title") String title,
-            @RequestParam("content") String content,
-            @RequestParam(value = "communitySlug", required = false) String communitySlug,
-            @RequestParam(value = "username", required = false) String username,
-            @RequestPart("file") MultipartFile file
-    ) {
-        if (title == null || title.isBlank()) {
-            throw new IllegalArgumentException("title is required");
-        }
-        if (content == null || content.isBlank()) {
-            throw new IllegalArgumentException("content is required");
-        }
-
-        String effectiveUsername = (username != null && !username.isBlank())
-                ? username.trim()
-                : user.getUser().getUsername();
-
-        var stored = mediaStorageService.store(file);
-        Post post = Post.builder()
-                .title(title.trim())
-                .content(content.trim())
-                .username(effectiveUsername)
-                .communitySlug(communitySlug)
-                .mediaUrl(stored.mediaUrl())
-                .mediaType(stored.mediaType())
                 .build();
         return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(post));
     }
