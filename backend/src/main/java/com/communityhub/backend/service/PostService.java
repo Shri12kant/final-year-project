@@ -55,22 +55,37 @@ public class PostService {
 
     @Transactional
     public void deletePost(Long id, String requesterUsername) {
+        System.out.println("DEBUG: deletePost called for id: " + id + ", requester: " + requesterUsername);
         Post post = getPostById(id);
+        System.out.println("DEBUG: Post found, owner: " + post.getUsername());
+        
         if (requesterUsername == null || !post.getUsername().equals(requesterUsername)) {
+            System.out.println("DEBUG: Forbidden - requester is not owner");
             throw new ForbiddenException("You can only delete your own posts");
         }
         
-        // Create notification for post deletion
-        notificationService.createPostDeletedNotification(post.getUsername(), post.getId(), post.getTitle());
-        
-        // First delete related votes
-        voteRepository.deleteByPostId(post.getId());
-        
-        // Then delete related comments
-        commentRepository.deleteByPostId(post.getId());
-        
-        // Finally delete the post
-        postRepository.delete(post);
+        try {
+            // Create notification for post deletion
+            System.out.println("DEBUG: Creating deletion notification");
+            notificationService.createPostDeletedNotification(post.getUsername(), post.getId(), post.getTitle());
+            
+            // First delete related votes
+            System.out.println("DEBUG: Deleting votes");
+            voteRepository.deleteByPostId(post.getId());
+            
+            // Then delete related comments
+            System.out.println("DEBUG: Deleting comments");
+            commentRepository.deleteByPostId(post.getId());
+            
+            // Finally delete the post
+            System.out.println("DEBUG: Deleting post");
+            postRepository.deleteById(id);
+            System.out.println("DEBUG: Post deleted successfully");
+        } catch (Exception e) {
+            System.out.println("DEBUG: Error during deletion: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     public Integer getVoteCount(Long postId) {
