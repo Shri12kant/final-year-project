@@ -17,12 +17,8 @@ export async function uploadImage(file: File): Promise<UploadResponse> {
   try {
     const response = await axios.post<UploadResponse>(
       `${API_BASE}/api/images/upload`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
+      formData
+      // Don't set Content-Type - axios sets it automatically with boundary
     )
     return response.data
   } catch (error) {

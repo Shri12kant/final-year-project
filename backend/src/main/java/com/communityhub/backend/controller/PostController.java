@@ -82,19 +82,49 @@ public class PostController {
             @PathVariable Long id,
             @RequestBody VoteRequest request
     ) {
-        String username = user.getUser().getUsername();
-        Vote vote = voteService.voteOnPost(id, username, request.getVoteType());
-        
-        VoteResponse response = new VoteResponse();
-        if (vote == null) {
-            response.setMessage("Vote removed successfully");
-            response.setVoteType(0);
-        } else {
-            response.setMessage("Vote recorded successfully");
-            response.setVoteType(vote.getVoteType());
+        try {
+            if (user == null || user.getUser() == null) {
+                VoteResponse response = new VoteResponse();
+                response.setMessage("User not authenticated");
+                return ResponseEntity.status(401).body(response);
+            }
+
+            String username = user.getUser().getUsername();
+            if (username == null || username.isEmpty()) {
+                VoteResponse response = new VoteResponse();
+                response.setMessage("Invalid user");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            if (id == null || id <= 0) {
+                VoteResponse response = new VoteResponse();
+                response.setMessage("Invalid post ID");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            if (request == null || request.getVoteType() == null) {
+                VoteResponse response = new VoteResponse();
+                response.setMessage("Invalid vote type");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            Vote vote = voteService.voteOnPost(id, username, request.getVoteType());
+            
+            VoteResponse response = new VoteResponse();
+            if (vote == null) {
+                response.setMessage("Vote removed successfully");
+                response.setVoteType(0);
+            } else {
+                response.setMessage("Vote recorded successfully");
+                response.setVoteType(vote.getVoteType());
+            }
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            VoteResponse response = new VoteResponse();
+            response.setMessage("Vote failed: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
         }
-        
-        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}/vote")
