@@ -24,6 +24,7 @@ export function SubmitPostPage() {
   const defaultSlug = params.get('community') ?? 'general'
   const [mediaFile, setMediaFile] = useState<File | null>(null)
   const [showCommunityDropdown, setShowCommunityDropdown] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const previewUrl = useMemo(() => {
     if (!mediaFile) return null
@@ -59,24 +60,33 @@ export function SubmitPostPage() {
 
   const create = useMutation({
     mutationFn: async (values: FormValues) => {
-      let imageUrl: string | undefined = undefined
-      
-      // Upload image to Cloudinary if present
-      if (mediaFile) {
-        const uploadResult = await uploadImage(mediaFile)
-        if (!uploadResult.success || !uploadResult.url) {
-          throw new Error(uploadResult.error || 'Image upload failed')
-        }
-        imageUrl = uploadResult.url
+      if (isSubmitting) {
+        throw new Error('Already submitting')
       }
+      setIsSubmitting(true)
       
-      // Create post with Cloudinary URL
-      return postsApi.createPost({
-        title: values.title,
-        content: values.content,
-        communitySlug: values.communitySlug,
-        imageUrl,
-      })
+      try {
+        let imageUrl: string | undefined = undefined
+        
+        // Upload image to Cloudinary if present
+        if (mediaFile) {
+          const uploadResult = await uploadImage(mediaFile)
+          if (!uploadResult.success || !uploadResult.url) {
+            throw new Error(uploadResult.error || 'Image upload failed')
+          }
+          imageUrl = uploadResult.url
+        }
+        
+        // Create post with Cloudinary URL
+        return postsApi.createPost({
+          title: values.title,
+          content: values.content,
+          communitySlug: values.communitySlug,
+          imageUrl,
+        })
+      } finally {
+        setIsSubmitting(false)
+      }
     },
     onSuccess: async (post) => {
       toast.success('Post created successfully!')
@@ -383,10 +393,10 @@ export function SubmitPostPage() {
         <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-[var(--border)]">
           <button
             type="submit"
-            disabled={create.isPending || communitiesLoading}
+            disabled={create.isPending || isSubmitting || communitiesLoading}
             className="flex-1 sm:flex-none rounded-xl bg-gradient-to-r from-[var(--accent)] to-[var(--accent-2)] px-6 py-2.5 text-sm font-semibold text-white shadow-md hover:shadow-lg hover:opacity-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {create.isPending ? (
+            {create.isPending || isSubmitting ? (
               <>
                 <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
