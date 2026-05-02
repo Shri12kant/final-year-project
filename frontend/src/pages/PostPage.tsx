@@ -75,14 +75,22 @@ export function PostPage() {
   })
 
   const deletePost = useMutation({
-    mutationFn: () => postsApi.deletePost(postId),
+    mutationFn: () => {
+      console.log('DEBUG Frontend: Calling deletePost for id:', postId)
+      return postsApi.deletePost(postId)
+    },
     onSuccess: async () => {
+      console.log('DEBUG Frontend: Delete success, invalidating queries')
       toast.success('Post deleted')
       await queryClient.invalidateQueries({ queryKey: ['posts'] })
+      await queryClient.refetchQueries({ queryKey: ['posts'] })
+      console.log('DEBUG Frontend: Queries invalidated, navigating home')
       navigate('/', { replace: true })
     },
     onError: (error: any) => {
-      console.error('Delete error:', error)
+      console.error('DEBUG Frontend: Delete error:', error)
+      console.error('DEBUG Frontend: Error response:', error.response)
+      console.error('DEBUG Frontend: Error message:', error.message)
       const message = error.response?.data?.error || error.message || 'Failed to delete post'
       toast.error(message)
     },

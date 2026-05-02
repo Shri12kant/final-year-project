@@ -145,12 +145,38 @@ public class PostController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePost(
+    public ResponseEntity<?> deletePost(
             @AuthenticationPrincipal SecurityUser user,
             @PathVariable Long id
     ) {
-        postService.deletePost(id, user.getUser().getUsername());
-        return ResponseEntity.noContent().build();
+        System.out.println("DEBUG: Controller deletePost called for id: " + id);
+        
+        try {
+            if (user == null) {
+                System.out.println("DEBUG: User is null - unauthorized");
+                return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+            }
+            
+            if (user.getUser() == null) {
+                System.out.println("DEBUG: user.getUser() is null - unauthorized");
+                return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+            }
+            
+            String username = user.getUser().getUsername();
+            if (username == null || username.isEmpty()) {
+                System.out.println("DEBUG: Username is null or empty");
+                return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+            }
+            
+            System.out.println("DEBUG: Calling service deletePost for user: " + username);
+            postService.deletePost(id, username);
+            System.out.println("DEBUG: Service deletePost completed successfully");
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            System.out.println("DEBUG: Exception in controller deletePost: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(Map.of("error", "Delete failed: " + e.getMessage()));
+        }
     }
 
     
