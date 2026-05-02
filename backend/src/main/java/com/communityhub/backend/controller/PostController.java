@@ -1,5 +1,7 @@
 package com.communityhub.backend.controller;
 
+import com.communityhub.backend.exception.ForbiddenException;
+import com.communityhub.backend.exception.ResourceNotFoundException;
 import com.communityhub.backend.model.Post;
 import com.communityhub.backend.model.Vote;
 import com.communityhub.backend.security.SecurityUser;
@@ -151,32 +153,42 @@ public class PostController {
             @PathVariable Long id
     ) {
         System.out.println("DEBUG: Controller deletePost called for id: " + id);
+        System.out.println("DEBUG: User object is: " + (user != null ? "present" : "null"));
         
         try {
             if (user == null) {
-                System.out.println("DEBUG: User is null - unauthorized");
+                System.out.println("DEBUG: User is null - returning 401");
                 return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
             }
             
             if (user.getUser() == null) {
-                System.out.println("DEBUG: user.getUser() is null - unauthorized");
+                System.out.println("DEBUG: user.getUser() is null - returning 401");
                 return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
             }
             
             String username = user.getUser().getUsername();
+            System.out.println("DEBUG: Username from token: " + username);
+            
             if (username == null || username.isEmpty()) {
-                System.out.println("DEBUG: Username is null or empty");
+                System.out.println("DEBUG: Username is null or empty - returning 401");
                 return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
             }
             
-            System.out.println("DEBUG: Calling service deletePost for user: " + username);
+            System.out.println("DEBUG: Calling service deletePost for id: " + id + ", user: " + username);
             postService.deletePost(id, username);
-            System.out.println("DEBUG: Service deletePost completed successfully");
+            System.out.println("DEBUG: Service deletePost completed - returning 204");
             return ResponseEntity.noContent().build();
+            
+        } catch (ResourceNotFoundException e) {
+            System.out.println("DEBUG: ResourceNotFoundException: " + e.getMessage());
+            return ResponseEntity.status(404).body(Map.of("error", e.getMessage()));
+        } catch (ForbiddenException e) {
+            System.out.println("DEBUG: ForbiddenException: " + e.getMessage());
+            return ResponseEntity.status(403).body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            System.out.println("DEBUG: Exception in controller deletePost: " + e.getMessage());
+            System.out.println("DEBUG: Unexpected Exception in deletePost: " + e.getClass().getName() + " - " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.internalServerError().body(Map.of("error", "Delete failed: " + e.getMessage()));
+            return ResponseEntity.status(500).body(Map.of("error", "Delete failed: " + e.getMessage()));
         }
     }
 

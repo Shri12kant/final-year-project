@@ -78,14 +78,18 @@ public class PostService {
             postRepository.deleteById(id);
             System.out.println("DEBUG: Post deleted successfully");
 
-            // Create notification for post deletion (non-blocking)
-            try {
-                System.out.println("DEBUG: Creating deletion notification");
-                notificationService.createPostDeletedNotification(post.getUsername(), post.getId(), post.getTitle());
-            } catch (Exception e) {
-                System.out.println("DEBUG: Notification creation failed (non-blocking): " + e.getMessage());
-                // Don't fail the delete operation if notification fails
-            }
+            // Create notification for post deletion (fire and forget - truly non-blocking)
+            // Use a new thread to avoid blocking the HTTP response
+            new Thread(() -> {
+                try {
+                    System.out.println("DEBUG: Creating deletion notification in background thread");
+                    notificationService.createPostDeletedNotification(post.getUsername(), post.getId(), post.getTitle());
+                    System.out.println("DEBUG: Notification created successfully");
+                } catch (Exception e) {
+                    System.out.println("DEBUG: Notification creation failed (non-blocking): " + e.getMessage());
+                    // Don't fail the delete operation if notification fails
+                }
+            }).start();
         } catch (Exception e) {
             System.out.println("DEBUG: Error during deletion: " + e.getMessage());
             e.printStackTrace();
