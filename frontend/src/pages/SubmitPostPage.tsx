@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { z } from 'zod'
@@ -25,6 +25,7 @@ export function SubmitPostPage() {
   const [mediaFile, setMediaFile] = useState<File | null>(null)
   const [showCommunityDropdown, setShowCommunityDropdown] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const successHandled = useRef(false)
 
   const previewUrl = useMemo(() => {
     if (!mediaFile) return null
@@ -60,6 +61,9 @@ export function SubmitPostPage() {
 
   const create = useMutation({
     mutationFn: async (values: FormValues) => {
+      // Reset success flag for new submission
+      successHandled.current = false
+      
       if (isSubmitting) {
         throw new Error('Already submitting')
       }
@@ -89,7 +93,11 @@ export function SubmitPostPage() {
       }
     },
     onSuccess: async (_post) => {
-      toast.success('Post created successfully!')
+      // Prevent duplicate toast notifications
+      if (successHandled.current) return
+      successHandled.current = true
+      
+      toast.success('Post created successfully!', { id: 'post-create-success' })
       await queryClient.invalidateQueries({ queryKey: ['posts'] })
       // Navigate to home page
       navigate('/', { replace: true })
