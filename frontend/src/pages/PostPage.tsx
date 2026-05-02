@@ -76,38 +76,15 @@ export function PostPage() {
 
   const deletePost = useMutation({
     mutationFn: () => postsApi.deletePost(postId),
-    onMutate: async () => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ['posts'] })
-
-      // Snapshot previous posts
-      const previousPosts = queryClient.getQueryData(['posts'])
-
-      // Optimistically remove post from cache
-      queryClient.setQueryData(['posts'], (old: any) => {
-        if (!old) return []
-        return old.filter((post: any) => post.id !== postId)
-      })
-
-      // Navigate immediately for instant feedback
-      navigate('/', { replace: true })
-
-      return { previousPosts }
-    },
     onSuccess: async () => {
       toast.success('Post deleted')
       await queryClient.invalidateQueries({ queryKey: ['posts'] })
+      navigate('/', { replace: true })
     },
-    onError: (error: any, _variables, context) => {
-      // Restore previous posts on error
-      if (context?.previousPosts) {
-        queryClient.setQueryData(['posts'], context.previousPosts)
-      }
+    onError: (error: any) => {
       console.error('Delete error:', error)
       const message = error.response?.data?.error || error.message || 'Failed to delete post'
       toast.error(message)
-      // Navigate back to post page on error
-      navigate(`/post/${postId}`, { replace: true })
     },
   })
 
