@@ -20,7 +20,7 @@ export function ProfilePage() {
     karma: 1250,
     postCount: 42,
     commentCount: 156,
-    profileImage: null as string | null // Will be loaded from API
+    profileImage: undefined as string | undefined // Will be loaded from API
   })
 
   // Delete account dialog state
@@ -60,7 +60,7 @@ export function ProfilePage() {
       setUser(prev => ({
         ...prev,
         username: userProfile.username || prev.username,
-        profileImage: userProfile.profileImage || null
+        profileImage: userProfile.profileImage || undefined
       }))
     }
   }, [userProfile])
@@ -111,7 +111,7 @@ export function ProfilePage() {
       >
         <div className="flex flex-col sm:flex-row items-start gap-4">
           <ProfilePictureUpload
-            currentImage={user.profileImage}
+            currentImage={user.profileImage ?? undefined}
             onImageChange={handleProfilePictureChange}
           />
           <div className="flex-1 min-w-0">
