@@ -64,10 +64,10 @@ export function SubmitPostPage() {
         throw new Error('Already submitting')
       }
       setIsSubmitting(true)
-      
+
       try {
         let imageUrl: string | undefined = undefined
-        
+
         // Upload image to Cloudinary if present
         if (mediaFile) {
           const uploadResult = await uploadImage(mediaFile)
@@ -76,7 +76,7 @@ export function SubmitPostPage() {
           }
           imageUrl = uploadResult.url
         }
-        
+
         // Create post with Cloudinary URL
         return postsApi.createPost({
           title: values.title,
@@ -88,14 +88,51 @@ export function SubmitPostPage() {
         setIsSubmitting(false)
       }
     },
+    onMutate: async (values) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['posts'] })
+
+      // Snapshot previous posts
+      const previousPosts = queryClient.getQueryData(['posts'])
+
+      // Optimistically add post to cache
+      const tempPost = {
+        id: Date.now(), // Temporary ID
+        title: values.title,
+        content: values.content,
+        username: user?.username || 'unknown',
+        communitySlug: values.communitySlug,
+        mediaUrl: previewUrl || null,
+        mediaType: mediaFile ? 'image' : null,
+        createdAt: new Date().toISOString(),
+        upvotes: 0,
+      }
+
+      queryClient.setQueryData(['posts'], (old: any) => {
+        if (!old) return [tempPost]
+        return [tempPost, ...old]
+      })
+
+      // Navigate immediately for instant feedback
+      navigate(`/post/${tempPost.id}`, { replace: true })
+
+      return { previousPosts, tempPost }
+    },
     onSuccess: async (post) => {
       toast.success('Post created successfully!')
       await queryClient.invalidateQueries({ queryKey: ['posts'] })
+      // Navigate to real post ID
       navigate(`/post/${post.id}`, { replace: true })
     },
-    onError: (error: any) => {
+    onError: (error: any, variables, context) => {
+      // Restore previous posts on error
+      if (context?.previousPosts) {
+        queryClient.setQueryData(['posts'], context.previousPosts)
+      }
       const message = error.response?.data?.error || error.message || 'Could not create post — are you logged in?'
       toast.error(message)
+      // Navigate back to submit page on error
+      navigate('/submit', { replace: true })
     },
   })
 
