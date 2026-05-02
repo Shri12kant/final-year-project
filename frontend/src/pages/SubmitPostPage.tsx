@@ -100,7 +100,7 @@ export function SubmitPostPage() {
         id: Date.now(), // Temporary ID
         title: values.title,
         content: values.content,
-        username: user?.username || 'unknown',
+        username: 'You', // Placeholder username
         communitySlug: values.communitySlug,
         mediaUrl: previewUrl || null,
         mediaType: mediaFile ? 'image' : null,
@@ -113,6 +113,9 @@ export function SubmitPostPage() {
         return [tempPost, ...old]
       })
 
+      // Reset loading state before navigation
+      setIsSubmitting(false)
+
       // Navigate immediately for instant feedback
       navigate(`/post/${tempPost.id}`, { replace: true })
 
@@ -124,13 +127,15 @@ export function SubmitPostPage() {
       // Navigate to real post ID
       navigate(`/post/${post.id}`, { replace: true })
     },
-    onError: (error: any, variables, context) => {
+    onError: (error: any, _variables, context) => {
       // Restore previous posts on error
       if (context?.previousPosts) {
         queryClient.setQueryData(['posts'], context.previousPosts)
       }
       const message = error.response?.data?.error || error.message || 'Could not create post — are you logged in?'
       toast.error(message)
+      // Reset loading state on error
+      setIsSubmitting(false)
       // Navigate back to submit page on error
       navigate('/submit', { replace: true })
     },
