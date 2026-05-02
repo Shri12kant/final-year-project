@@ -1,11 +1,11 @@
 package com.communityhub.backend.controller;
 
+import com.communityhub.backend.security.SecurityUser;
 import com.communityhub.backend.user.User;
 import com.communityhub.backend.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,25 +25,30 @@ public class UserController {
     private final UserRepository userRepository;
 
     @GetMapping("/profile")
-    public ResponseEntity<Map<String, Object>> getUserProfile(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Map<String, Object>> getUserProfile(@AuthenticationPrincipal SecurityUser securityUser) {
         System.out.println("DEBUG: /users/profile endpoint called");
-        
+
         try {
-            if (userDetails == null) {
-                System.out.println("DEBUG: userDetails is null");
+            if (securityUser == null) {
+                System.out.println("DEBUG: securityUser is null");
                 return ResponseEntity.status(401).build();
             }
 
-            String username = userDetails.getUsername();
+            if (securityUser.getUser() == null) {
+                System.out.println("DEBUG: securityUser.getUser() is null");
+                return ResponseEntity.status(401).build();
+            }
+
+            String username = securityUser.getUser().getUsername();
             System.out.println("DEBUG: Getting profile for username: " + username);
-            
+
             if (username == null || username.isEmpty()) {
                 System.out.println("DEBUG: username is null or empty");
                 return ResponseEntity.badRequest().build();
             }
-            
+
             Optional<User> userOpt = userRepository.findByUsername(username);
-            
+
             if (userOpt.isEmpty()) {
                 System.out.println("DEBUG: User not found for username: " + username);
                 return ResponseEntity.notFound().build();
@@ -51,17 +56,18 @@ public class UserController {
 
             User user = userOpt.get();
             System.out.println("DEBUG: User found, profileImage: " + user.getProfileImage());
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("username", user.getUsername() != null ? user.getUsername() : "");
             response.put("email", user.getEmail() != null ? user.getEmail() : "");
-            response.put("profileImage", user.getProfileImage() != null ? user.getProfileImage() : "");
+            response.put("profileImage", user.getProfileImage()); // Return null instead of empty string
             response.put("createdAt", user.getCreatedAt() != null ? user.getCreatedAt() : "");
 
             System.out.println("DEBUG: Response profileImage: " + response.get("profileImage"));
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            System.out.println("DEBUG: Exception in /users/profile: " + e.getMessage());
+            System.out.println("DEBUG: Exception in /users/profile at line: " + e.getStackTrace()[0].getLineNumber());
+            System.out.println("DEBUG: Exception message: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.internalServerError().body(Map.of("error", "Failed to get profile: " + e.getMessage()));
         }
@@ -69,10 +75,10 @@ public class UserController {
 
     @PostMapping("/profile/image")
     public ResponseEntity<Map<String, String>> uploadProfileImage(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal SecurityUser securityUser,
             @RequestParam("file") MultipartFile file) {
-        
-        if (userDetails == null) {
+
+        if (securityUser == null || securityUser.getUser() == null) {
             return ResponseEntity.status(401).build();
         }
 
@@ -97,9 +103,9 @@ public class UserController {
             String dataUrl = "data:" + file.getContentType() + ";base64," + base64Image;
 
             // Update user profile image in database
-            String username = userDetails.getUsername();
+            String username = securityUser.getUser().getUsername();
             Optional<User> userOpt = userRepository.findByUsername(username);
-            
+
             if (userOpt.isEmpty()) {
                 return ResponseEntity.notFound().build();
             }
@@ -108,10 +114,10 @@ public class UserController {
             System.out.println("DEBUG: Setting profile image for user: " + username);
             System.out.println("DEBUG: Image data URL length: " + dataUrl.length());
             System.out.println("DEBUG: Current profile image before update: " + user.getProfileImage());
-            
+
             user.setProfileImage(dataUrl);
             System.out.println("DEBUG: Profile image set in user object");
-            
+
             User savedUser = userRepository.save(user);
             System.out.println("DEBUG: User saved to database");
             System.out.println("DEBUG: Saved profile image: " + savedUser.getProfileImage());
@@ -128,14 +134,14 @@ public class UserController {
     }
 
     @DeleteMapping("/profile/image")
-    public ResponseEntity<Map<String, String>> removeProfileImage(@AuthenticationPrincipal UserDetails userDetails) {
-        if (userDetails == null) {
+    public ResponseEntity<Map<String, String>> removeProfileImage(@AuthenticationPrincipal SecurityUser securityUser) {
+        if (securityUser == null || securityUser.getUser() == null) {
             return ResponseEntity.status(401).build();
         }
 
-        String username = userDetails.getUsername();
+        String username = securityUser.getUser().getUsername();
         Optional<User> userOpt = userRepository.findByUsername(username);
-        
+
         if (userOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -148,19 +154,19 @@ public class UserController {
     }
 
     @DeleteMapping("/account")
-    public ResponseEntity<Map<String, String>> deleteAccount(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Map<String, String>> deleteAccount(@AuthenticationPrincipal SecurityUser securityUser) {
         System.out.println("DEBUG: /users/account delete endpoint called");
-        
-        if (userDetails == null) {
-            System.out.println("DEBUG: userDetails is null");
+
+        if (securityUser == null || securityUser.getUser() == null) {
+            System.out.println("DEBUG: securityUser is null");
             return ResponseEntity.status(401).build();
         }
 
-        String username = userDetails.getUsername();
+        String username = securityUser.getUser().getUsername();
         System.out.println("DEBUG: Deleting account for username: " + username);
-        
+
         Optional<User> userOpt = userRepository.findByUsername(username);
-        
+
         if (userOpt.isEmpty()) {
             System.out.println("DEBUG: User not found for username: " + username);
             return ResponseEntity.notFound().build();
@@ -168,12 +174,12 @@ public class UserController {
 
         User user = userOpt.get();
         System.out.println("DEBUG: User found, deleting account: " + user.getUsername());
-        
+
         try {
             // Delete user from database (cascade delete will handle related data)
             userRepository.delete(user);
             System.out.println("DEBUG: User deleted from database");
-            
+
             return ResponseEntity.ok(Map.of("message", "Account deleted successfully"));
         } catch (Exception e) {
             System.out.println("DEBUG: Error deleting account: " + e.getMessage());

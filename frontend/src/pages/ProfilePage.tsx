@@ -20,7 +20,7 @@ export function ProfilePage() {
     karma: 1250,
     postCount: 42,
     commentCount: 156,
-    profileImage: undefined as string | undefined // Will be loaded from API
+    profileImage: null as string | null // Will be loaded from API
   })
 
   // Delete account dialog state
@@ -60,7 +60,7 @@ export function ProfilePage() {
       setUser(prev => ({
         ...prev,
         username: userProfile.username || prev.username,
-        profileImage: userProfile.profileImage || undefined
+        profileImage: userProfile.profileImage || null
       }))
     }
   }, [userProfile])
