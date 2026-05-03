@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { communitiesApi, type Community } from '../api/communitiesApi'
+import { communitiesApi, COMMUNITY_CATEGORIES, type Community } from '../api/communitiesApi'
 import { useJoinedCommunitiesStore } from '../features/communities/useJoinedCommunitiesStore'
 import { useAuthStore } from '../auth/useAuthStore'
 import { toast } from 'sonner'
 
 export function CommunitiesPage() {
   const [q, setQ] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('')
   const joined = useJoinedCommunitiesStore((s) => s.joinedSlugs)
   const join = useJoinedCommunitiesStore((s) => s.join)
   const leave = useJoinedCommunitiesStore((s) => s.leave)
@@ -29,10 +30,14 @@ export function CommunitiesPage() {
   })
 
   const list = communities.filter(
-    (c: Community) =>
-      c.name.toLowerCase().includes(q.toLowerCase()) ||
-      c.slug.toLowerCase().includes(q.toLowerCase()) ||
-      c.description.toLowerCase().includes(q.toLowerCase()),
+    (c: Community) => {
+      const matchesSearch = 
+        c.name.toLowerCase().includes(q.toLowerCase()) ||
+        c.slug.toLowerCase().includes(q.toLowerCase()) ||
+        c.description.toLowerCase().includes(q.toLowerCase())
+      const matchesCategory = selectedCategory === '' || c.category === selectedCategory
+      return matchesSearch && matchesCategory
+    },
   )
 
   return (
@@ -53,6 +58,20 @@ export function CommunitiesPage() {
           </div>
           
           <div className="flex items-center gap-2">
+            {/* Category Filter */}
+            <div className="relative">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="min-w-[140px] sm:min-w-[180px] rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 transition-all cursor-pointer"
+              >
+                <option value="">All Categories</option>
+                {COMMUNITY_CATEGORIES.map((category) => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+              </select>
+            </div>
+
             {/* Search */}
             <div className="relative">
               <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,7 +81,7 @@ export function CommunitiesPage() {
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search communities..."
-                className="min-w-[180px] sm:min-w-[220px] rounded-xl border border-[var(--border)] bg-[var(--surface)] pl-9 pr-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 transition-all"
+                className="min-w-[140px] sm:min-w-[180px] rounded-xl border border-[var(--border)] bg-[var(--surface)] pl-9 pr-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 transition-all"
               />
             </div>
             
@@ -126,9 +145,16 @@ export function CommunitiesPage() {
                   </Link>
                   
                   <div className="flex-1 min-w-0">
-                    <Link to={`/r/${c.slug}`} className="font-semibold text-[var(--text)] group-hover:text-[var(--accent)] transition-colors block">
-                      r/{c.slug}
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link to={`/r/${c.slug}`} className="font-semibold text-[var(--text)] group-hover:text-[var(--accent)] transition-colors block">
+                        r/{c.slug}
+                      </Link>
+                      {c.category && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--accent)]/10 text-[var(--accent)] font-medium">
+                          {c.category}
+                        </span>
+                      )}
+                    </div>
                     <div className="mt-1 text-sm text-[var(--text-muted)] line-clamp-2">
                       {c.description}
                     </div>

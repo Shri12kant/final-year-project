@@ -36,6 +36,9 @@ public class Community {
     @Column(length = 100)
     private String accent;
 
+    @Column(length = 50)
+    private String category; // 11th, 12th, Graduation, Courses, Competitive exams, Jobs, Government exam preparation
+
     @Column(nullable = false, length = 100)
     private String createdBy;
 
@@ -107,6 +110,14 @@ public class Community {
 
     public void setAccent(String accent) {
         this.accent = accent;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public String getCreatedBy() {

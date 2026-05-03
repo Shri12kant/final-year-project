@@ -8,6 +8,7 @@ export interface Community {
   rules?: string
   memberCount: number
   accent?: string
+  category?: string
   createdBy: string
   createdAt: string
 }
@@ -17,7 +18,18 @@ export interface CreateCommunityInput {
   description: string
   rules?: string
   accent?: string
+  category?: string
 }
+
+export const COMMUNITY_CATEGORIES = [
+  "11th",
+  "12th",
+  "Graduation",
+  "Courses",
+  "Competitive exams",
+  "Jobs",
+  "Government exam preparation"
+] as const;
 
 export const communitiesApi = {
   async fetchAll(): Promise<Community[]> {

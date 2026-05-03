@@ -31,7 +31,24 @@ public class CommunityController {
             @AuthenticationPrincipal SecurityUser user,
             @Valid @RequestBody CreateCommunityRequest request
     ) {
+        System.out.println("DEBUG: createCommunity endpoint called");
+        System.out.println("DEBUG: Request category: " + request.getCategory());
+        
         try {
+            // Validate category
+            if (request.getCategory() == null || request.getCategory().isEmpty()) {
+                System.out.println("DEBUG: Category is missing or empty");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "Category is required"));
+            }
+            
+            if (!VALID_CATEGORIES.contains(request.getCategory())) {
+                System.out.println("DEBUG: Invalid category: " + request.getCategory());
+                System.out.println("DEBUG: Valid categories: " + VALID_CATEGORIES);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "Invalid category. Must be one of: " + VALID_CATEGORIES));
+            }
+            
             // Generate slug from name
             String slug = request.getName().toLowerCase()
                     .replaceAll("[^a-z0-9\\s]", "")
@@ -44,15 +61,20 @@ public class CommunityController {
             community.setDescription(request.getDescription());
             community.setRules(request.getRules());
             community.setAccent(request.getAccent() != null ? request.getAccent() : "from-blue-500/20 to-cyan-500/20");
+            community.setCategory(request.getCategory());
             community.setCreatedBy(user.getUser().getUsername());
             community.setMemberCount(1); // Creator is first member
 
             Community savedCommunity = communityService.createCommunity(community);
+            System.out.println("DEBUG: Created community with id: " + savedCommunity.getId() + ", category: " + savedCommunity.getCategory());
             return ResponseEntity.status(HttpStatus.CREATED).body(savedCommunity);
         } catch (IllegalArgumentException e) {
+            System.out.println("DEBUG: IllegalArgumentException: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
+            System.out.println("DEBUG: Exception: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Failed to create community: " + e.getMessage()));
         }
@@ -183,6 +205,12 @@ public class CommunityController {
         }
     }
 
+    // Valid categories
+    private static final List<String> VALID_CATEGORIES = List.of(
+        "11th", "12th", "Graduation", "Courses", 
+        "Competitive exams", "Jobs", "Government exam preparation"
+    );
+
     // Request DTOs
     @Data
     @NoArgsConstructor
@@ -198,6 +226,8 @@ public class CommunityController {
         private String rules;
 
         private String accent;
+
+        private String category; // Must be one of VALID_CATEGORIES
     }
 
     @Data

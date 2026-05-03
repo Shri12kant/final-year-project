@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { communitiesApi } from '../api/communitiesApi'
+import { communitiesApi, COMMUNITY_CATEGORIES } from '../api/communitiesApi'
 import { useAuthStore } from '../auth/useAuthStore'
 import { toast } from 'sonner'
 
@@ -25,6 +25,7 @@ export function CreateCommunityPage() {
     description: '',
     rules: '',
     accent: ACCENT_OPTIONS[0].value,
+    category: '',
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -60,6 +61,10 @@ export function CreateCommunityPage() {
       newErrors.description = 'Description must be less than 500 characters'
     }
 
+    if (!formData.category) {
+      newErrors.category = 'Category is required'
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -80,6 +85,7 @@ export function CreateCommunityPage() {
       description: formData.description.trim(),
       rules: formData.rules.trim() || undefined,
       accent: formData.accent,
+      category: formData.category,
     })
   }
 
@@ -187,6 +193,40 @@ export function CreateCommunityPage() {
               background: 'var(--surface-solid)',
             }}
           />
+        </div>
+
+        {/* Category */}
+        <div>
+          <label className="text-sm font-medium text-[var(--muted)] flex items-center gap-1.5">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+            </svg>
+            Category *
+          </label>
+          <select
+            value={formData.category}
+            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+            className={`mt-1.5 w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all ${
+              errors.category ? 'border-red-500 focus:border-red-500' : 'focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20'
+            }`}
+            style={{
+              borderColor: errors.category ? '#ef4444' : 'var(--border)',
+              background: 'var(--surface-solid)',
+            }}
+          >
+            <option value="">Select a category</option>
+            {COMMUNITY_CATEGORIES.map((category) => (
+              <option key={category} value={category}>{category}</option>
+            ))}
+          </select>
+          {errors.category && (
+            <p className="mt-1 text-xs text-red-400 flex items-center gap-1">
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              {errors.category}
+            </p>
+          )}
         </div>
 
         {/* Accent Color */}
