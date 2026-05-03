@@ -42,10 +42,7 @@ export function CommunityDetailPage() {
   if (!community) {
     return (
       <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-200">
-        Unknown community.{' '}
-        <Link to="/communities" className="underline">
-          Browse all
-        </Link>
+        Unknown community.
       </div>
     )
   }

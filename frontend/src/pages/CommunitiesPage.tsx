@@ -67,19 +67,6 @@ export function CommunitiesPage() {
         </div>
       </div>
 
-      {joined.length > 0 && (
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--text-muted)] flex items-center gap-2 flex-wrap">
-          <svg className="w-4 h-4 text-[var(--accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
-          <span>Joined:</span>
-          {joined.map((slug) => (
-            <Link key={slug} to={`/r/${slug}`} className="font-medium text-[var(--accent)] hover:underline">
-              r/{slug}
-            </Link>
-          ))}
-        </div>
-      )}
 
       {/* Loading State */}
       {isLoading && (
@@ -109,42 +96,65 @@ export function CommunitiesPage() {
       {/* Communities Grid */}
       {!isLoading && !error && (
         <div className="grid gap-4 md:grid-cols-2">
-          {list.map((c: Community) => (
-            <Link
-              key={c.slug}
-              to={`/r/${c.slug}`}
-              className="group rounded-2xl border border-[var(--border)] bg-[var(--surface)] bg-gradient-to-br p-5 transition-all duration-300 hover:border-[var(--accent)]/30 hover:shadow-lg hover:-translate-y-0.5"
-              style={{ backgroundImage: `linear-gradient(to bottom right, var(--surface), var(--surface-muted))` }}
-            >
-              <div className="flex items-start gap-3">
-                {/* Community Icon */}
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${c.accent || 'from-blue-500/20 to-cyan-500/20'} flex items-center justify-center flex-shrink-0`}>
-                  <span className="text-lg font-bold text-[var(--text)]">
-                    {c.name.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-[var(--text)] group-hover:text-[var(--accent)] transition-colors">
-                    r/{c.slug}
-                  </div>
-                  <div className="mt-1 text-sm text-[var(--text-muted)] line-clamp-2">
-                    {c.description}
-                  </div>
-                  <div className="mt-3 flex items-center gap-3 text-xs text-[var(--text-muted)]">
-                    <span className="flex items-center gap-1">
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
-                      {c.memberCount?.toLocaleString() || 0} members
+          {list.map((c: Community) => {
+            const isJoined = joined.includes(c.slug)
+            return (
+              <div
+                key={c.slug}
+                className="group rounded-2xl border border-[var(--border)] bg-[var(--surface)] bg-gradient-to-br p-5 transition-all duration-300 hover:border-[var(--accent)]/30 hover:shadow-lg hover:-translate-y-0.5"
+                style={{ backgroundImage: `linear-gradient(to bottom right, var(--surface), var(--surface-muted))` }}
+              >
+                <div className="flex items-start gap-3">
+                  {/* Community Icon */}
+                  <Link to={`/r/${c.slug}`} className={`w-12 h-12 rounded-xl bg-gradient-to-br ${c.accent || 'from-blue-500/20 to-cyan-500/20'} flex items-center justify-center flex-shrink-0 hover:opacity-80 transition-opacity`}>
+                    <span className="text-lg font-bold text-[var(--text)]">
+                      {c.name.charAt(0).toUpperCase()}
                     </span>
-                    <span>·</span>
-                    <span>Created by u/{c.createdBy}</span>
+                  </Link>
+                  
+                  <div className="flex-1 min-w-0">
+                    <Link to={`/r/${c.slug}`} className="font-semibold text-[var(--text)] group-hover:text-[var(--accent)] transition-colors block">
+                      r/{c.slug}
+                    </Link>
+                    <div className="mt-1 text-sm text-[var(--text-muted)] line-clamp-2">
+                      {c.description}
+                    </div>
+                    <div className="mt-3 flex items-center gap-3 text-xs text-[var(--text-muted)]">
+                      <span className="flex items-center gap-1">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        {c.memberCount?.toLocaleString() || 0} members
+                      </span>
+                      <span>·</span>
+                      <span>Created by u/{c.createdBy}</span>
+                    </div>
                   </div>
+                  
+                  {/* Join/Leave Button */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      if (isJoined) {
+                        useJoinedCommunitiesStore.getState().leave(c.slug)
+                      } else {
+                        useJoinedCommunitiesStore.getState().join(c.slug)
+                      }
+                    }}
+                    className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-all flex-shrink-0 ${
+                      isJoined
+                        ? 'border border-[var(--border)] hover:bg-[var(--surface-muted)] text-[var(--text)]'
+                        : 'bg-[var(--accent)] text-white hover:opacity-90'
+                    }`}
+                  >
+                    {isJoined ? 'Joined' : 'Join'}
+                  </button>
                 </div>
               </div>
-            </Link>
-          ))}
+            )
+          })}
         </div>
       )}
 
