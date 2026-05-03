@@ -1,14 +1,27 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { communitiesApi, type Community } from '../api/communitiesApi'
 import { useJoinedCommunitiesStore } from '../features/communities/useJoinedCommunitiesStore'
 import { useAuthStore } from '../auth/useAuthStore'
+import { toast } from 'sonner'
 
 export function CommunitiesPage() {
   const [q, setQ] = useState('')
-  const joined = useJoinedCommunitiesStore((s) => s.joined)
+  const joined = useJoinedCommunitiesStore((s) => s.joinedSlugs)
+  const join = useJoinedCommunitiesStore((s) => s.join)
+  const leave = useJoinedCommunitiesStore((s) => s.leave)
+  const fetchJoined = useJoinedCommunitiesStore((s) => s.fetchJoined)
+  const isJoinedLoading = useJoinedCommunitiesStore((s) => s.isLoading)
   const user = useAuthStore((s) => s.user)
+
+  // Fetch joined communities on mount
+  useEffect(() => {
+    if (user) {
+      console.log('DEBUG CommunitiesPage: Fetching joined communities')
+      fetchJoined()
+    }
+  }, [user, fetchJoined])
 
   const { data: communities = [], isLoading, error } = useQuery({
     queryKey: ['communities'],
@@ -134,22 +147,29 @@ export function CommunitiesPage() {
                   {/* Join/Leave Button */}
                   <button
                     type="button"
-                    onClick={(e) => {
+                    disabled={isJoinedLoading}
+                    onClick={async (e) => {
                       e.preventDefault()
                       e.stopPropagation()
-                      if (isJoined) {
-                        useJoinedCommunitiesStore.getState().leave(c.slug)
-                      } else {
-                        useJoinedCommunitiesStore.getState().join(c.slug)
+                      try {
+                        if (isJoined) {
+                          await leave(c)
+                          toast.success(`Left r/${c.slug}`)
+                        } else {
+                          await join(c)
+                          toast.success(`Joined r/${c.slug}`)
+                        }
+                      } catch (err: any) {
+                        toast.error(err.response?.data?.error || 'Failed to update membership')
                       }
                     }}
                     className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-all flex-shrink-0 ${
                       isJoined
                         ? 'border border-[var(--border)] hover:bg-[var(--surface-muted)] text-[var(--text)]'
                         : 'bg-[var(--accent)] text-white hover:opacity-90'
-                    }`}
+                    } ${isJoinedLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
-                    {isJoined ? 'Joined' : 'Join'}
+                    {isJoinedLoading ? '...' : (isJoined ? 'Joined' : 'Join')}
                   </button>
                 </div>
               </div>

@@ -115,6 +115,74 @@ public class CommunityController {
         }
     }
 
+    @PostMapping("/{id}/join")
+    public ResponseEntity<?> joinCommunity(
+            @AuthenticationPrincipal SecurityUser user,
+            @PathVariable Long id
+    ) {
+        System.out.println("DEBUG: joinCommunity endpoint called - id: " + id);
+        try {
+            if (user == null || user.getUser() == null) {
+                System.out.println("DEBUG: User not authenticated");
+                return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+            }
+            String username = user.getUser().getUsername();
+            System.out.println("DEBUG: User: " + username + " joining community: " + id);
+            
+            communityService.joinCommunity(id, username);
+            return ResponseEntity.ok(Map.of("message", "Joined community successfully", "communityId", id));
+        } catch (IllegalArgumentException e) {
+            System.out.println("DEBUG: IllegalArgumentException: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            System.out.println("DEBUG: Exception: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to join community: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{id}/leave")
+    public ResponseEntity<?> leaveCommunity(
+            @AuthenticationPrincipal SecurityUser user,
+            @PathVariable Long id
+    ) {
+        System.out.println("DEBUG: leaveCommunity endpoint called - id: " + id);
+        try {
+            if (user == null || user.getUser() == null) {
+                System.out.println("DEBUG: User not authenticated");
+                return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+            }
+            String username = user.getUser().getUsername();
+            System.out.println("DEBUG: User: " + username + " leaving community: " + id);
+            
+            communityService.leaveCommunity(id, username);
+            return ResponseEntity.ok(Map.of("message", "Left community successfully", "communityId", id));
+        } catch (IllegalArgumentException e) {
+            System.out.println("DEBUG: IllegalArgumentException: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            System.out.println("DEBUG: Exception: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to leave community: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{id}/is-member")
+    public ResponseEntity<?> isMember(
+            @AuthenticationPrincipal SecurityUser user,
+            @PathVariable Long id
+    ) {
+        try {
+            if (user == null || user.getUser() == null) {
+                return ResponseEntity.ok(Map.of("isMember", false));
+            }
+            boolean isMember = communityService.isMember(id, user.getUser().getUsername());
+            return ResponseEntity.ok(Map.of("isMember", isMember));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("isMember", false));
+        }
+    }
+
     // Request DTOs
     @Data
     @NoArgsConstructor

@@ -43,4 +43,30 @@ export const communitiesApi = {
   async delete(id: number): Promise<void> {
     await http.delete(`/api/communities/${id}`)
   },
+
+  async join(id: number): Promise<void> {
+    console.log('DEBUG Frontend: Joining community', id)
+    const response = await http.post(`/api/communities/${id}/join`)
+    console.log('DEBUG Frontend: Join response', response.data)
+    return response.data
+  },
+
+  async leave(id: number): Promise<void> {
+    console.log('DEBUG Frontend: Leaving community', id)
+    const response = await http.post(`/api/communities/${id}/leave`)
+    console.log('DEBUG Frontend: Leave response', response.data)
+    return response.data
+  },
+
+  async getUserCommunities(): Promise<Community[]> {
+    console.log('DEBUG Frontend: Fetching user communities')
+    const response = await http.get('/api/users/me/communities')
+    console.log('DEBUG Frontend: User communities response', response.data)
+    return response.data
+  },
+
+  async isMember(id: number): Promise<boolean> {
+    const response = await http.get(`/api/communities/${id}/is-member`)
+    return response.data.isMember
+  },
 }

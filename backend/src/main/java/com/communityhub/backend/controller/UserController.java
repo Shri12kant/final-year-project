@@ -1,6 +1,8 @@
 package com.communityhub.backend.controller;
 
+import com.communityhub.backend.model.Community;
 import com.communityhub.backend.security.SecurityUser;
+import com.communityhub.backend.service.CommunityService;
 import com.communityhub.backend.user.User;
 import com.communityhub.backend.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +11,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 import java.io.IOException;
 import java.util.Base64;
@@ -23,6 +27,7 @@ import java.util.Optional;
 public class UserController {
 
     private final UserRepository userRepository;
+    private final CommunityService communityService;
 
     @GetMapping("/profile")
     public ResponseEntity<Map<String, Object>> getUserProfile(@AuthenticationPrincipal SecurityUser securityUser) {
@@ -184,6 +189,26 @@ public class UserController {
         } catch (Exception e) {
             System.out.println("DEBUG: Error deleting account: " + e.getMessage());
             return ResponseEntity.internalServerError().body(Map.of("error", "Failed to delete account: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/me/communities")
+    public ResponseEntity<?> getUserCommunities(@AuthenticationPrincipal SecurityUser user) {
+        System.out.println("DEBUG: /users/me/communities endpoint called");
+        try {
+            if (user == null || user.getUser() == null) {
+                System.out.println("DEBUG: User not authenticated");
+                return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+            }
+            String username = user.getUser().getUsername();
+            System.out.println("DEBUG: Fetching communities for user: " + username);
+            
+            List<Community> communities = communityService.getUserCommunities(username);
+            return ResponseEntity.ok(communities);
+        } catch (Exception e) {
+            System.out.println("DEBUG: Error fetching user communities: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to fetch communities: " + e.getMessage()));
         }
     }
 }
