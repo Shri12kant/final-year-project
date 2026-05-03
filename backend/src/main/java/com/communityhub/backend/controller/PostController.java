@@ -137,14 +137,35 @@ public class PostController {
     }
 
     @GetMapping("/{id}/vote")
-    public ResponseEntity<UserVoteResponse> getUserVote(
+    public ResponseEntity<?> getUserVote(
             @AuthenticationPrincipal SecurityUser user,
             @PathVariable Long id
     ) {
-        String username = user.getUser().getUsername();
-        return voteService.getUserVote(id, username)
-                .map(vote -> ResponseEntity.ok(new UserVoteResponse(vote.getVoteType())))
-                .orElse(ResponseEntity.ok(new UserVoteResponse(0)));
+        System.out.println("DEBUG: getUserVote called for post id: " + id);
+        
+        try {
+            if (user == null || user.getUser() == null) {
+                System.out.println("DEBUG: User not authenticated, returning 401");
+                return ResponseEntity.status(401).body(Map.of("error", "Unauthorized", "voteType", 0));
+            }
+            
+            String username = user.getUser().getUsername();
+            System.out.println("DEBUG: Getting vote for user: " + username + ", post: " + id);
+            
+            return voteService.getUserVote(id, username)
+                    .map(vote -> {
+                        System.out.println("DEBUG: Found vote: " + vote.getVoteType());
+                        return ResponseEntity.ok(new UserVoteResponse(vote.getVoteType()));
+                    })
+                    .orElseGet(() -> {
+                        System.out.println("DEBUG: No vote found, returning 0");
+                        return ResponseEntity.ok(new UserVoteResponse(0));
+                    });
+        } catch (Exception e) {
+            System.out.println("DEBUG: Exception in getUserVote: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to get vote", "voteType", 0));
+        }
     }
 
     @DeleteMapping("/{id}")

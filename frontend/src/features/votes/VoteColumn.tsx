@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { postsApi } from '../../api/postsApi'
 
 type Props = {
@@ -9,29 +9,46 @@ type Props = {
 }
 
 export function VoteColumn({ postId, className, voteScore }: Props) {
+  const queryClient = useQueryClient()
   const [displayScore, setDisplayScore] = useState(voteScore || 0)
   
-  const { data: userVote } = useQuery({
+  const { data: userVote, refetch: refetchUserVote } = useQuery({
     queryKey: ['userVote', postId],
     queryFn: () => postsApi.getUserVote(postId),
+    enabled: !!postId,
   })
 
   const voteMutation = useMutation({
     mutationFn: (voteType: number) => postsApi.voteOnPost(postId, voteType),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
+      console.log('DEBUG Vote: Success response:', data)
+      
+      // Update display score based on vote response
       setDisplayScore(prev => {
-        if (data.voteType === 0) {
+        const currentUserVote = userVote?.voteType || 0
+        const newVoteType = data.voteType
+        
+        if (newVoteType === 0) {
           // Vote was removed
-          return userVote?.voteType === 1 ? prev - 1 : prev + 1
-        } else if (userVote?.voteType === 0) {
+          return currentUserVote === 1 ? prev - 1 : prev + 1
+        } else if (currentUserVote === 0) {
           // New vote
-          return data.voteType === 1 ? prev + 1 : prev - 1
-        } else {
-          // Changed vote
-          return data.voteType === 1 ? prev + 2 : prev - 2
+          return newVoteType === 1 ? prev + 1 : prev - 1
+        } else if (currentUserVote !== newVoteType) {
+          // Changed vote (up->down or down->up)
+          return newVoteType === 1 ? prev + 2 : prev - 2
         }
+        return prev
       })
+      
+      // Invalidate and refetch queries to sync with server
+      await queryClient.invalidateQueries({ queryKey: ['userVote', postId] })
+      await queryClient.invalidateQueries({ queryKey: ['posts'] })
+      await refetchUserVote()
     },
+    onError: (error) => {
+      console.error('DEBUG Vote: Error:', error)
+    }
   })
 
   useEffect(() => {

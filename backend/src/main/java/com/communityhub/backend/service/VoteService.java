@@ -58,8 +58,15 @@ public class VoteService {
             Vote savedVote = voteRepository.save(newVote);
             updatePostVoteCounts(postId);
             
-            // Create notification for post author
-            notificationService.createVoteNotification(post.getUsername(), username, postId, post.getTitle());
+            // Create notification for post author (async - don't block response)
+            new Thread(() -> {
+                try {
+                    notificationService.createVoteNotification(post.getUsername(), username, postId, post.getTitle());
+                } catch (Exception e) {
+                    // Notification failure shouldn't affect vote
+                    System.out.println("DEBUG: Vote notification failed (non-blocking): " + e.getMessage());
+                }
+            }).start();
             
             return savedVote;
         }
